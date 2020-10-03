@@ -4,4 +4,4 @@ cmake_minimum_required(VERSION 3.10)
 project(Pomegranate)
 
 # add the executable
-add_executable(Pomegranate pomegranate.cxx)
+add_executable(Pomegranate src/main.cpp)
