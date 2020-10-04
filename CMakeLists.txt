@@ -13,7 +13,7 @@ if(NOT UNIX)
   message(WARNING "Unsupported operating system")
 endif()
 
-set(antlr4-demo-GENERATED_SRC
+set(Pomegranate-GENERATED_SRC
    ${PROJECT_SOURCE_DIR}/bin/generated/LsystemLexer.cpp 
    ${PROJECT_SOURCE_DIR}/bin/generated/LsystemParser.cpp
    ${PROJECT_SOURCE_DIR}/bin/generated/LsystemBaseListener.cpp
@@ -22,22 +22,22 @@ set(antlr4-demo-GENERATED_SRC
    ${PROJECT_SOURCE_DIR}/bin/generated/LsystemVisitor.cpp
  )
 
-foreach(src_file ${antlr4-demo-GENERATED_SRC})
+foreach(src_file ${Pomegranate-GENERATED_SRC})
       set_source_files_properties(
           ${src_file}
           PROPERTIES
           GENERATED TRUE
           )
-endforeach(src_file ${antlr4-demo-GENERATED_SRC})
+endforeach(src_file ${Pomegranate-GENERATED_SRC})
 
 set(ANTLR_JAR_LOCATION /usr/local/lib/antlr-4.8-complete.jar)
 
-add_custom_target(GenerateParser DEPENDS ${antlr4-demo-GENERATED_SRC})
-add_custom_command(OUTPUT ${antlr4-demo-GENERATED_SRC}
+add_custom_target(GenerateParser DEPENDS ${Pomegranate-GENERATED_SRC})
+add_custom_command(OUTPUT ${Pomegranate-GENERATED_SRC}
    COMMAND 
    ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/generated/
    COMMAND
-   "${Java_JAVA_EXECUTABLE}" -jar ${ANTLR_JAR_LOCATION} -Werror -Dlanguage=Cpp -listener -visitor -o ${PROJECT_SOURCE_DIR}/bin/generated/ -package antlrcpptest ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4
+   "${Java_JAVA_EXECUTABLE}" -jar ${ANTLR_JAR_LOCATION} -Werror -Dlanguage=Cpp -listener -visitor -o ${PROJECT_SOURCE_DIR}/bin/generated/ -package lsystem ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4
    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
    DEPENDS ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 
    )
@@ -47,10 +47,10 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/bin/generated
   )
 
-#file(GLOB antlr4-demo_SRC "${PROJECT_SOURCE_DIR}/bin/generated/*")
-set(antlr4-demo_SRC 
+#file(GLOB Pomegranate_SRC "${PROJECT_SOURCE_DIR}/bin/generated/*")
+set(Pomegranate_SRC 
   ${PROJECT_SOURCE_DIR}/src/main.cpp
-  ${antlr4-demo-GENERATED_SRC}
+  ${Pomegranate-GENERATED_SRC}
   )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -59,18 +59,28 @@ else()
   set (flags_1 "-MP /wd4251")
 endif()
 
-foreach(src_file ${antlr4-demo_SRC})
+foreach(src_file ${Pomegranate_SRC})
       set_source_files_properties(
           ${src_file}
           PROPERTIES
           COMPILE_FLAGS "${COMPILE_FLAGS} ${flags_1}"
           )
-endforeach(src_file ${antlr4-demo_SRC})
+endforeach(src_file ${Pomegranate_SRC})
 
-add_executable(antlr4-demo
-  ${antlr4-demo_SRC}
+add_executable(Pomegranate
+  ${Pomegranate_SRC}
   )
 
-add_dependencies(antlr4-demo GenerateParser)
+add_dependencies(Pomegranate GenerateParser)
 
-target_link_libraries(antlr4-demo antlr4_static)
+# required if linking to static library
+add_definitions(-DANTLR4CPP_STATIC)
+
+# using /MD flag for antlr4_runtime (for Visual C++ compilers only)
+set(ANTLR4_WITH_STATIC_CRT OFF)
+# add external build for antlrcpp
+include(ExternalAntlr4Cpp)
+# add antrl4cpp artifacts to project environment
+include_directories(${ANTLR4_INCLUDE_DIRS})
+
+target_link_libraries(Pomegranate antlr4_static)
