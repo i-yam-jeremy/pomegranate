@@ -25,13 +25,19 @@ set(ANTLR_EXECUTABLE /usr/local/lib/antlr-4.8-complete.jar)
 find_package(ANTLR REQUIRED)
 
 # Call macro to add lexer and grammar to your build dependencies.
-antlr_target(SampleGrammarLexer src/lsystem/parser/Lsystem.g4 BOTH
-             PACKAGE antlrcpptest)
+antlr_target(LsystemGrammar src/lsystem/parser/Lsystem.g4 BOTH
+             PACKAGE lsystem)
 
 # include generated files in project environment
-include_directories(${ANTLR_SampleGrammar_OUTPUT_DIR})
+include_directories(${ANTLR_LsystemGrammar_OUTPUT_DIR})
+
+#message(FATAL_ERROR ${ANTLR_LsystemGrammar_CXX_OUTPUTS})
 
 # add generated grammar to demo binary target
+file(GLOB ANTLR_LsystemGrammar_CXX_OUTPUTS
+	"${ANTLR_LsystemGrammar_OUTPUT_DIR}/src/lsystem/parser/*.h"
+	"${ANTLR_LsystemGrammar_OUTPUT_DIR}/src/lsystem/parser/*.cpp"
+)
 add_executable(Pomegranate src/main.cpp
-               ${ANTLR_SampleGrammar_CXX_OUTPUTS})
+               ${ANTLR_LsystemGrammar_CXX_OUTPUTS})
 target_link_libraries(Pomegranate antlr4_static)

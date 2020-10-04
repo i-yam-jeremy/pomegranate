@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "antlr4-runtime/antlr4-runtime.h"
-#include "antlr4-runtime/LsystemLexer.h"
-#include "antlr4-runtime/LsystemParser.h"
+#include "antlr4-runtime.h"
+#include "src/lsystem/parser/LsystemLexer.h"
+#include "src/lsystem/parser/LsystemParser.h"
 
 using namespace antlr4;
 
@@ -11,9 +11,9 @@ int main(int argc, char** argv) {
 	stream.open("test.lsystem");
 
 	ANTLRInputStream input(stream);
-	LsystemLexer lexer(&input);
+	lsystem::LsystemLexer lexer(&input);
 	CommonTokenStream tokens(&lexer);
-	LsystemParser parser(&tokens);
+	lsystem::LsystemParser parser(&tokens);
 
 	std::cout << "Hello world" << std::endl;
 	return 0;
