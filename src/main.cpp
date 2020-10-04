@@ -1,11 +1,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "antlr4-runtime.h"
-/*#include "src/lsystem/parser/LsystemLexer.h"
+/*#include "antlr4-runtime.h"
+#include "src/lsystem/parser/LsystemLexer.h"
 #include "src/lsystem/parser/LsystemParser.h"*/
 
-using namespace antlr4;
+//using namespace antlr4;
 
 int main(int argc, char** argv) {
 	std::istringstream stream;
