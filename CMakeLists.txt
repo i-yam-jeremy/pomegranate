@@ -47,10 +47,10 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/bin/generated
   )
 
-#file(GLOB Pomegranate_SRC "${PROJECT_SOURCE_DIR}/bin/generated/*")
+file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 set(Pomegranate_SRC 
-  ${PROJECT_SOURCE_DIR}/src/main.cpp
-  ${Pomegranate-GENERATED_SRC}
+  	${Pomegranate-NONGENERATED_SRC}
+	${Pomegranate-GENERATED_SRC}
   )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
