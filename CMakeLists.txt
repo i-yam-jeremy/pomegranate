@@ -5,6 +5,8 @@ project(Pomegranate)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+set(GENERATED_SOURCE_DIR ${PROJECT_BINARY_DIR}/generated)
+
 # compiler must be 11 or 14
 set(CMAKE_CXX_STANDARD 14)
 
@@ -13,44 +15,19 @@ if(NOT UNIX)
   message(WARNING "Unsupported operating system")
 endif()
 
-set(Pomegranate-GENERATED_SRC
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemLexer.cpp 
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemParser.cpp
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemBaseListener.cpp
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemBaseVisitor.cpp
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemListener.cpp
-   ${PROJECT_SOURCE_DIR}/bin/generated/LsystemVisitor.cpp
- )
-
-foreach(src_file ${Pomegranate-GENERATED_SRC})
-      set_source_files_properties(
-          ${src_file}
-          PROPERTIES
-          GENERATED TRUE
-          )
-endforeach(src_file ${Pomegranate-GENERATED_SRC})
-
-set(ANTLR_JAR_LOCATION /usr/local/lib/antlr-4.8-complete.jar)
-
-add_custom_target(GenerateParser DEPENDS ${Pomegranate-GENERATED_SRC})
-add_custom_command(OUTPUT ${Pomegranate-GENERATED_SRC}
-   COMMAND 
-   ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/generated/
-   COMMAND
-   java -jar ${ANTLR_JAR_LOCATION} -Werror -Dlanguage=Cpp -listener -visitor -o ${PROJECT_SOURCE_DIR}/bin/generated/ -package lsystem ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4
-   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-   DEPENDS ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 
-   )
+include(SimpleANTLR)
+compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GENERATED_SOURCE_DIR})
 
 include_directories(
   ${PROJECT_BINARY_DIR}/antlr4_runtime/src/antlr4_runtime/runtime/Cpp/runtime/src
-  ${PROJECT_SOURCE_DIR}/bin/generated
+  ${GENERATED_SOURCE_DIR}
   )
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE Pomegranate-GENERATED_SRC "${GENERATED_SOURCE_DIR}/*.cpp")
 set(Pomegranate_SRC 
-  	${Pomegranate-NONGENERATED_SRC}
 	${Pomegranate-GENERATED_SRC}
+  	${Pomegranate-NONGENERATED_SRC}
   )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -71,7 +48,7 @@ add_executable(Pomegranate
   ${Pomegranate_SRC}
   )
 
-add_dependencies(Pomegranate GenerateParser)
+add_dependencies(Pomegranate GenericParser)
 
 # required if linking to static library
 add_definitions(-DANTLR4CPP_STATIC)
