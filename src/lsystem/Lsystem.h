@@ -8,6 +8,10 @@ namespace lsystem {
 
 class LsystemOutputSegment {
 public:
+	std::string toString() {
+		return "<" + type + ", (" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "), " + std::to_string(length);
+	};
+
 	std::string type;
 	double x, y, z;
 	double yaw, pitch, roll;
@@ -16,6 +20,15 @@ public:
 
 class LsystemOutput {
 public:
+	std::string toString() {
+		std::string s = "LsystemOutput {\n";
+		for (auto segment : segments) {
+			s += segment.toString() + "\n";
+		}
+		s += "}";
+		return s;
+	};
+
 	std::vector<LsystemOutputSegment> segments;
 };
 
