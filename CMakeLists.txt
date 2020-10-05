@@ -37,7 +37,7 @@ add_custom_command(OUTPUT ${Pomegranate-GENERATED_SRC}
    COMMAND 
    ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/generated/
    COMMAND
-   "${Java_JAVA_EXECUTABLE}" -jar ${ANTLR_JAR_LOCATION} -Werror -Dlanguage=Cpp -listener -visitor -o ${PROJECT_SOURCE_DIR}/bin/generated/ -package lsystem ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4
+   java -jar ${ANTLR_JAR_LOCATION} -Werror -Dlanguage=Cpp -listener -visitor -o ${PROJECT_SOURCE_DIR}/bin/generated/ -package lsystem ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4
    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
    DEPENDS ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 
    )
