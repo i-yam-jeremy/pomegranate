@@ -63,21 +63,6 @@ public:
 		for (int i = 0; i < generations; i++) {
 			applySingleGeneration();
 		}
-
-		std::cout << "State: ";
-		for (auto cmd : *state) {
-			std::cout << cmd.value << ", ";
-		}
-		std::cout << std::endl;
-		for (auto rule : *rules) {
-			std::cout << "Rule: {" << std::endl;
-			std::cout << "\tname: " << rule.name << std::endl;
-			std::cout << "\tbody: ";
-			for (auto cmd : *(rule.commands)) {
-				std::cout << cmd.value << ", ";
-			}
-			std::cout << std::endl << "}" << std::endl;
-		}
 		
 		return eval();
 	}
