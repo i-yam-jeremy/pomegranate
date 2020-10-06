@@ -22,7 +22,6 @@ public:
 
   virtual antlrcpp::Any visitLrule(LsystemParser::LruleContext *ctx) override {
 	  std::string name = ctx->name->getText();
-	  std::cout << "Reached rule: " << name << std::endl;
 	  std::shared_ptr<std::vector<Command>> body = visitCommands(ctx->body);
 	  rules->push_back(Rule(name, body));
 	  return NULL;
