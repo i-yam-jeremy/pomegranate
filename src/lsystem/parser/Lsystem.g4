@@ -1,6 +1,7 @@
 grammar Lsystem;		
-lsystem: initiator=ID ',' lrule*;
-lrule: ID '=' (sym | stackCommand)*;
+lsystem: initiator=commands ',' lrule*;
+lrule: ID '=' commands;
+commands: (sym | stackCommand)*;
 sym: ID | MINUS | PLUS;
 stackCommand: LBRACK (sym | stackCommand)* RBRACK;
 

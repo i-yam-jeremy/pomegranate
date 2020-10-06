@@ -51,6 +51,19 @@ struct Rule {
 	std::vector<Command> commands;
 };
 
+class Lsystem {
+public:
+	Lsystem(std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules): initiator(initiator), rules(rules) {}
+
+	std::shared_ptr<LsystemOutput> compile() {
+		return std::make_shared<LsystemOutput>();
+		// TODO
+	}
+private:
+	std::shared_ptr<std::vector<Command>> initiator;
+	std::shared_ptr<std::vector<Rule>> rules;
+};
+
 std::shared_ptr<LsystemOutput> compile(std::string source);
 
 } // End namespace lsystem
