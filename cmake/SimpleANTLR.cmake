@@ -16,7 +16,7 @@ function(compile_antlr GRAMMAR_NAME GRAMMAR_FILE GENERATED_SOURCE_DIR)
 		  )
 	endforeach(src_file ${Pomegranate-GENERATED_SRC})
 
-	set(ANTLR_JAR_LOCATION /usr/local/lib/antlr-4.8-complete.jar)
+	set(ANTLR_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr-4.8-complete.jar)
 
 	add_custom_target(GenericParser DEPENDS ${Pomegranate-GENERATED_SRC})
 	add_custom_command(OUTPUT ${Pomegranate-GENERATED_SRC}
