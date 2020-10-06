@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
@@ -59,6 +60,20 @@ public:
 	Lsystem(std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules): initiator(initiator), rules(rules) {}
 
 	std::shared_ptr<LsystemOutput> compile() {
+		std::cout << "Initiator: ";
+		for (auto cmd : *initiator) {
+			std::cout << cmd.value << ", ";
+		}
+		std::cout << std::endl;
+		for (auto rule : *rules) {
+			std::cout << "Rule: {" << std::endl;
+			std::cout << "\tname: " << rule.name << std::endl;
+			std::cout << "\tbody: ";
+			for (auto cmd : *(rule.commands)) {
+				std::cout << cmd.value << ", ";
+			}
+			std::cout << std::endl << "}" << std::endl;
+		}
 		return std::make_shared<LsystemOutput>();
 		// TODO
 	}

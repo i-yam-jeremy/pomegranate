@@ -22,6 +22,7 @@ public:
 
   virtual antlrcpp::Any visitLrule(LsystemParser::LruleContext *ctx) override {
 	  std::string name = ctx->name->getText();
+	  std::cout << "Reached rule: " << name << std::endl;
 	  std::shared_ptr<std::vector<Command>> body = visitCommands(ctx->body);
 	  rules->push_back(Rule(name, body));
 	  return NULL;
@@ -41,6 +42,12 @@ public:
 		case '+':
 			currentCommands->push_back(Command(ctx->getText(), CommandType::YAW_RIGHT));
 			break;
+		case '[':
+			currentCommands->push_back(Command(ctx->getText(), CommandType::PUSH));
+			break;
+		case ']':
+			currentCommands->push_back(Command(ctx->getText(), CommandType::POP));
+			break;
 		default:
 			std::cerr << "Error no command symbol found: " << ctx->getText() << std::endl;
 			exit(1);
@@ -50,13 +57,6 @@ public:
 
   virtual antlrcpp::Any visitSubruleSym(LsystemParser::SubruleSymContext* ctx) override {
 	  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
-	  return NULL;
-  }
-
-  virtual antlrcpp::Any visitStackCommand(LsystemParser::StackCommandContext *ctx) override {
-	  currentCommands->push_back(Command(ctx->getText(), CommandType::PUSH));
-	  visitCommands(ctx->cmd);
-	  currentCommands->push_back(Command(ctx->getText(), CommandType::POP));
 	  return NULL;
   }
 

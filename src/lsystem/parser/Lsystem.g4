@@ -1,10 +1,9 @@
 grammar Lsystem;		
-lsystem: initiator=commands ',' lrule*;
+lsystem: initiator=commands ',' lrule (',' lrule)*;
 lrule: name=ID '=' body=commands;
-commands: (sym | subruleSym | stackCommand)*;
-sym: MINUS | PLUS;
+commands: (sym | subruleSym)*;
+sym: MINUS | PLUS | LBRACK | RBRACK;
 subruleSym: ID;
-stackCommand: LBRACK cmd=commands RBRACK;
 
 MINUS	: '-';
 PLUS	: '+';
