@@ -14,34 +14,55 @@ class  LsystemLoaderVisitor : public LsystemVisitor {
 public:
 
   virtual antlrcpp::Any visitLsystem(LsystemParser::LsystemContext *ctx) override {
-	//std::shared_ptr<std::vector<Command>> initiator = visitCommands(ctx->initiator);
-	return std::make_shared<Lsystem>(std::make_shared<std::vector<Command>>(), std::make_shared<std::vector<Rule>>());
+	rules = std::make_shared<std::vector<Rule>>();
+	std::shared_ptr<std::vector<Command>> initiator = visitCommands(ctx->initiator);
+	visitChildren(ctx);
+	return std::make_shared<Lsystem>(initiator, rules);
   }
 
   virtual antlrcpp::Any visitLrule(LsystemParser::LruleContext *ctx) override {
-    return visitChildren(ctx);
+	  std::string name = ctx->name->getText();
+	  std::shared_ptr<std::vector<Command>> body = visitCommands(ctx->body);
+	  rules->push_back(Rule(name, body));
+	  return NULL;
   }
 
   virtual antlrcpp::Any visitCommands(LsystemParser::CommandsContext *ctx) override {
-	std::cout << "Reached command: " << ctx->toString() << std::endl;
-	return visitChildren(ctx);
+	  currentCommands = std::make_shared<std::vector<Command>>();
+	  visitChildren(ctx);
+	  return currentCommands;
   }
 
   virtual antlrcpp::Any visitSym(LsystemParser::SymContext *ctx) override {
-	/*switch(ctx->toString()[0]) {
+	switch(ctx->getText()[0]) {
 		case '-':
-			return Command(value, CommandType::YAW_LEFT);
+			currentCommands->push_back(Command(ctx->getText(), CommandType::YAW_LEFT));
+			break;
+		case '+':
+			currentCommands->push_back(Command(ctx->getText(), CommandType::YAW_RIGHT));
+			break;
 		default:
-			std::cerr << "Error no command symbol found" << std::endl;
+			std::cerr << "Error no command symbol found: " << ctx->getText() << std::endl;
 			exit(1);
-	}*/
-	  return visitChildren(ctx);
+	}
+	return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSubruleSym(LsystemParser::SubruleSymContext* ctx) override {
+	  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
+	  return NULL;
   }
 
   virtual antlrcpp::Any visitStackCommand(LsystemParser::StackCommandContext *ctx) override {
-    return visitChildren(ctx);
+	  currentCommands->push_back(Command(ctx->getText(), CommandType::PUSH));
+	  visitCommands(ctx->cmd);
+	  currentCommands->push_back(Command(ctx->getText(), CommandType::POP));
+	  return NULL;
   }
 
+private:
+	std::shared_ptr<std::vector<Command>> currentCommands;
+	std::shared_ptr<std::vector<Rule>> rules;
 
 };
 

@@ -42,13 +42,16 @@ enum CommandType {
 };
 
 class Command {
+public:
+	Command(std::string value, CommandType type) : value(value), type(type) {}
 	std::string value;
 	CommandType type;	
 };
 
 struct Rule {
+	Rule(std::string name, std::shared_ptr<std::vector<Command>> commands) : name(name), commands(commands) {}
 	std::string name;
-	std::vector<Command> commands;
+	std::shared_ptr<std::vector<Command>> commands;
 };
 
 class Lsystem {
