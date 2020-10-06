@@ -1,5 +1,5 @@
 grammar Lsystem;		
-lsystem: initiator=commands ',' lrule (',' lrule)*;
+lsystem: generations=INT ',' initiator=commands ',' lrule (',' lrule)*;
 lrule: name=ID '=' body=commands;
 commands: (sym | subruleSym)*;
 sym: MINUS | PLUS | LBRACK | RBRACK;

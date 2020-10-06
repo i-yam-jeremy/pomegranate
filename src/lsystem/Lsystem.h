@@ -57,11 +57,15 @@ struct Rule {
 
 class Lsystem {
 public:
-	Lsystem(std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules): initiator(initiator), rules(rules) {}
+	Lsystem(int generations, std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules): generations(generations), state(initiator), rules(rules) {}
 
 	std::shared_ptr<LsystemOutput> compile() {
-		std::cout << "Initiator: ";
-		for (auto cmd : *initiator) {
+		for (int i = 0; i < generations; i++) {
+			applySingleGeneration();
+		}
+
+		std::cout << "State: ";
+		for (auto cmd : *state) {
 			std::cout << cmd.value << ", ";
 		}
 		std::cout << std::endl;
@@ -74,11 +78,41 @@ public:
 			}
 			std::cout << std::endl << "}" << std::endl;
 		}
-		return std::make_shared<LsystemOutput>();
-		// TODO
+		
+		return eval();
 	}
+
 private:
-	std::shared_ptr<std::vector<Command>> initiator;
+	void applySingleGeneration() {
+		std::vector<Command> newCommands;
+		for (auto cmd : *state) {
+			if (cmd.type == CommandType::ID) {
+				bool foundMatchingRule = false;
+				for (auto rule : *rules) {
+					if (rule.name == cmd.value) {
+						newCommands.insert(newCommands.end(), rule.commands->begin(), rule.commands->end());
+						foundMatchingRule = true;
+						break;
+					}
+				}
+				if (!foundMatchingRule) {
+					newCommands.push_back(cmd);
+				}
+			}
+			else {
+				newCommands.push_back(cmd);
+			}
+		}
+		*state = newCommands;
+	}
+
+	std::shared_ptr<LsystemOutput> eval() {
+		return std::make_shared<LsystemOutput>(); // TODO
+	}
+
+private:
+	int generations;
+	std::shared_ptr<std::vector<Command>> state;
 	std::shared_ptr<std::vector<Rule>> rules;
 };
 
