@@ -23,6 +23,7 @@ public:
 
   virtual antlrcpp::Any visitLrule(LsystemParser::LruleContext *ctx) override {
 	  std::string name = ctx->name->getText();
+	  currentParentRule = name;
 	  std::shared_ptr<std::vector<Command>> body = visitCommands(ctx->body);
 	  rules->push_back(Rule(name, body));
 	  return NULL;
@@ -57,7 +58,7 @@ public:
 
   virtual antlrcpp::Any visitSubruleSym(LsystemParser::SubruleSymContext* ctx) override {
 	  if (ctx->getText() == "F") {
-		  currentCommands->push_back(Command(ctx->getText(), CommandType::FORWARD));
+		  currentCommands->push_back(Command(ctx->getText(), CommandType::FORWARD, currentParentRule));
 	  }
 	  else {
 		  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
@@ -68,6 +69,7 @@ public:
 private:
 	std::shared_ptr<std::vector<Command>> currentCommands;
 	std::shared_ptr<std::vector<Rule>> rules;
+	std::string currentParentRule = ""; // For determining which rule caused which forward command, so forwards within Trunk rules will become Trunk objects, etc.
 
 };
 

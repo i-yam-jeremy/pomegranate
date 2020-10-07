@@ -62,9 +62,17 @@ enum CommandType {
 
 class Command {
 public:
-	Command(std::string value, CommandType type) : value(value), type(type) {}
+	Command(std::string value, CommandType type, std::string parentRuleType):
+		value(value),
+		type(type),
+		parentRuleType(parentRuleType) {}
+	Command(std::string value, CommandType type) :
+		value(value),
+		type(type),
+		parentRuleType("") {}
 	std::string value;
 	CommandType type;
+	std::string parentRuleType;
 };
 
 struct Rule {
@@ -139,7 +147,7 @@ private:
 			switch (cmd.type) {
 			case FORWARD: {
 				auto dir = currentState.getDirection();
-				out->addSegment(LsystemOutputSegment("TODO", currentState.position, dir, currentState.length));
+				out->addSegment(LsystemOutputSegment(cmd.parentRuleType, currentState.position, dir, currentState.length));
 				currentState.position += dir * currentState.length;
 				break;
 			}
