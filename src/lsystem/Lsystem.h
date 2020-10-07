@@ -4,76 +4,12 @@
 #include <string>
 #include <memory>
 #include <vector>
-
 #include <fbxsdk.h>
 
+#include "Output.h"
+#include "Command.h"
+
 namespace lsystem {
-
-class LsystemOutputSegment {
-public:
-	LsystemOutputSegment(std::string type, FbxVector4 startPosition, FbxVector4 direction, double length) :
-		type(type),
-		startPosition(startPosition),
-		direction(direction),
-		length(length) {}
-	std::string toString() {
-		return "<" + type 
-			+ ", (" + std::to_string(startPosition[0]) 
-			+ "," + std::to_string(startPosition[1])
-			+ "," + std::to_string(startPosition[2])
-			+ "), (" + std::to_string(direction[0])
-			+ "," + std::to_string(direction[1])
-			+ "," + std::to_string(direction[2])
-			+ "), " + std::to_string(length);
-	};
-
-	std::string type;
-	FbxVector4 startPosition;
-	FbxVector4 direction;
-	double length;
-};
-
-class LsystemOutput {
-public:
-	void addSegment(LsystemOutputSegment segment) {
-		segments.push_back(segment);
-	};
-
-	std::string toString() {
-		std::string s = "LsystemOutput {\n";
-		for (auto segment : segments) {
-			s += segment.toString() + "\n";
-		}
-		s += "}";
-		return s;
-	};
-
-	std::vector<LsystemOutputSegment> segments;
-};
-
-enum CommandType {
-	YAW_RIGHT,
-	YAW_LEFT,
-	PUSH,
-	POP,
-	FORWARD,
-	ID
-};
-
-class Command {
-public:
-	Command(std::string value, CommandType type, std::string parentRuleType):
-		value(value),
-		type(type),
-		parentRuleType(parentRuleType) {}
-	Command(std::string value, CommandType type) :
-		value(value),
-		type(type),
-		parentRuleType("") {}
-	std::string value;
-	CommandType type;
-	std::string parentRuleType;
-};
 
 struct Rule {
 	Rule(std::string name, std::shared_ptr<std::vector<Command>> commands) : name(name), commands(commands) {}
@@ -104,7 +40,7 @@ class Lsystem {
 public:
 	Lsystem(int generations, std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules): generations(generations), state(initiator), rules(rules) {}
 
-	std::shared_ptr<LsystemOutput> compile() {
+	std::shared_ptr<Output> compile() {
 		for (int i = 0; i < generations; i++) {
 			applySingleGeneration();
 		}
@@ -136,8 +72,8 @@ private:
 		*state = newCommands;
 	}
 
-	std::shared_ptr<LsystemOutput> eval() {
-		auto out = std::make_shared<LsystemOutput>();
+	std::shared_ptr<Output> eval() {
+		auto out = std::make_shared<Output>();
 
 		std::vector<EvalState> stack;
 
@@ -147,7 +83,7 @@ private:
 			switch (cmd.type) {
 			case FORWARD: {
 				auto dir = currentState.getDirection();
-				out->addSegment(LsystemOutputSegment(cmd.parentRuleType, currentState.position, dir, currentState.length));
+				out->addSegment(OutputSegment(cmd.parentRuleType, currentState.position, dir, currentState.length));
 				currentState.position += dir * currentState.length;
 				break;
 			}
@@ -180,6 +116,6 @@ private:
 	std::shared_ptr<std::vector<Rule>> rules;
 };
 
-std::shared_ptr<LsystemOutput> compile(std::string source);
+std::shared_ptr<Output> compile(std::string source);
 
 } // End namespace lsystem

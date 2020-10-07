@@ -9,7 +9,7 @@
 
 using namespace antlr4;
 
-std::shared_ptr<lsystem::LsystemOutput> lsystem::compile(std::string source) {
+std::shared_ptr<lsystem::Output> lsystem::compile(std::string source) {
 	std::istringstream stream;
 	stream.str(source);
 
