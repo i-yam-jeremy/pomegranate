@@ -13,13 +13,13 @@ set(GENERATED_SOURCE_DIR ${PROJECT_BINARY_DIR}/generated)
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/antlr-runtime/src")
 link_directories(thirdparty/antlr-runtime)
 
+include_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/include")
+link_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/lib/vs2017/x64/debug")
+
 include(SimpleANTLR)
 compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GENERATED_SOURCE_DIR})
 
-include_directories(
-  ${PROJECT_BINARY_DIR}/antlr4_runtime/src/antlr4_runtime/runtime/Cpp/runtime/src
-  ${GENERATED_SOURCE_DIR}
-  )
+include_directories(${GENERATED_SOURCE_DIR})
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE Pomegranate-GENERATED_SRC "${GENERATED_SOURCE_DIR}/*.cpp")
@@ -47,4 +47,4 @@ add_executable(Pomegranate
   )
 
 add_dependencies(Pomegranate GenericParser)
-target_link_libraries(Pomegranate antlr4-runtime)
+target_link_libraries(Pomegranate antlr4-runtime libfbxsdk)
