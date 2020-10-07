@@ -56,7 +56,12 @@ public:
   }
 
   virtual antlrcpp::Any visitSubruleSym(LsystemParser::SubruleSymContext* ctx) override {
-	  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
+	  if (ctx->getText() == "F") {
+		  currentCommands->push_back(Command(ctx->getText(), CommandType::FORWARD));
+	  }
+	  else {
+		  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
+	  }
 	  return NULL;
   }
 
