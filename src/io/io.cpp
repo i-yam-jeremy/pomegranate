@@ -10,7 +10,6 @@ std::unordered_map<std::string, FbxNode*> io::loadFbx(std::string path) {
 	FbxIOSettings* ios = FbxIOSettings::Create(sdkManager, IOSROOT);
 	ios->SetBoolProp(IMP_FBX_MATERIAL, true);
 	ios->SetBoolProp(IMP_FBX_TEXTURE, true);
-	ios->SetBoolProp(IMP_FBX_ANIMATION, false);
 
 	FbxScene* scene = FbxScene::Create(sdkManager, "");
 	FbxImporter* importer = FbxImporter::Create(sdkManager, "");
@@ -27,6 +26,18 @@ std::unordered_map<std::string, FbxNode*> io::loadFbx(std::string path) {
 	}
 
 	return geoByName;
+}
+
+void io::exportFbx(std::string path, FbxScene* scene) {
+	FbxManager* sdkManager = FbxManager::Create();
+	FbxIOSettings* ios = FbxIOSettings::Create(sdkManager, IOSROOT);
+	ios->SetBoolProp(EXP_FBX_MATERIAL, true);
+	ios->SetBoolProp(EXP_FBX_TEXTURE, true);
+
+	FbxExporter* exporter = FbxExporter::Create(sdkManager, "");
+	exporter->Initialize(path.c_str(), -1, ios);
+	exporter->Export(scene);
+	exporter->Destroy();
 }
 
 std::string io::loadTextFile(std::string path) {
