@@ -83,6 +83,11 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 		case YAW_RIGHT:
 			currentState.angles[0] += currentState.angleChange;
 			break;
+		case ROLL_CW:
+		case ROLL_CCW:
+		case PITCH_UP:
+		case PITCH_DOWN:
+			break;
 		case PUSH:
 			stack.push_back(currentState);
 			break;

@@ -5,4 +5,4 @@ init=Trunk,
 
 rules: 
 Trunk=F[---F][+++F]TrunkBranch,
-Branch = FF[-F][+F]
+Branch = FF[-F][+F]/\\^&

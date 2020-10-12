@@ -6,6 +6,10 @@ namespace lsystem {
 	enum CommandType {
 		YAW_RIGHT,
 		YAW_LEFT,
+		ROLL_CW,
+		ROLL_CCW,
+		PITCH_UP,
+		PITCH_DOWN,
 		PUSH,
 		POP,
 		FORWARD,

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "antlr4-runtime.h"
+#include "LsystemLexer.h"
 #include "LsystemVisitor.h"
 
 #include "../Lsystem.h"
@@ -37,17 +38,29 @@ public:
   }
 
   virtual antlrcpp::Any visitSym(LsystemParser::SymContext *ctx) override {
-	switch(ctx->getText()[0]) {
-		case '-':
+	switch(ctx->getStart()->getType()) {
+		case LsystemLexer::LEFT:
 			currentCommands->push_back(Command(ctx->getText(), CommandType::YAW_LEFT));
 			break;
-		case '+':
+		case LsystemLexer::RIGHT:
 			currentCommands->push_back(Command(ctx->getText(), CommandType::YAW_RIGHT));
 			break;
-		case '[':
+		case LsystemLexer::ROLL_CW:
+			currentCommands->push_back(Command(ctx->getText(), CommandType::ROLL_CW));
+			break;
+		case LsystemLexer::ROLL_CCW:
+			currentCommands->push_back(Command(ctx->getText(), CommandType::ROLL_CCW));
+			break;
+		case LsystemLexer::PITCH_UP:
+			currentCommands->push_back(Command(ctx->getText(), CommandType::PITCH_UP));
+			break;
+		case LsystemLexer::PITCH_DOWN:
+			currentCommands->push_back(Command(ctx->getText(), CommandType::PITCH_DOWN));
+			break;
+		case LsystemLexer::PUSH:
 			currentCommands->push_back(Command(ctx->getText(), CommandType::PUSH));
 			break;
-		case ']':
+		case LsystemLexer::POP:
 			currentCommands->push_back(Command(ctx->getText(), CommandType::POP));
 			break;
 		default:
