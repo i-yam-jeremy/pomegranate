@@ -36,6 +36,10 @@ namespace lsystem {
 			segments.push_back(segment);
 		};
 
+		const std::vector<OutputSegment>& getSegments() {
+			return segments;
+		}
+
 		std::string toString() {
 			std::string s = "LsystemOutput {\n";
 			for (auto segment : segments) {
@@ -45,6 +49,7 @@ namespace lsystem {
 			return s;
 		};
 
+	private:
 		std::vector<OutputSegment> segments;
 	};
 
