@@ -16,11 +16,12 @@ public:
   virtual antlrcpp::Any visitLsystem(LsystemParser::LsystemContext *ctx) override {
 	rules = std::make_shared<std::vector<Rule>>();
 	int generations = std::stoi(ctx->generations->getText());
+	double angle = std::stod(ctx->angle->getText());
 	std::shared_ptr<std::vector<Command>> initiator = visitCommands(ctx->initiator);
 	visitChildren(ctx);
-	return std::make_shared<Lsystem>(generations, initiator, rules);
+	return std::make_shared<Lsystem>(generations, angle, initiator, rules);
   }
-
+   
   virtual antlrcpp::Any visitLrule(LsystemParser::LruleContext *ctx) override {
 	  std::string name = ctx->name->getText();
 	  currentParentRule = name;

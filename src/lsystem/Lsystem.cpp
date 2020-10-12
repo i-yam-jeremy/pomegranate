@@ -67,7 +67,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	std::vector<EvalState> stack;
 
-	EvalState currentState(FbxVector4(0, 0, 0, 0), FbxVector4(0, 0, 0, 0), 1.0, 25 * 3.1415926535 / 180);
+	EvalState currentState(FbxVector4(0, 0, 0, 0), FbxVector4(0, 0, 0, 0), 1.0, angle * 3.1415926535 / 180);
 
 	for (auto cmd : *state) {
 		switch (cmd.type) {

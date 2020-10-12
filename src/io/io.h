@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <fbxsdk.h>
 
-class IO {
-public:
-	static std::unordered_map<std::string, FbxNode*> loadInputFbx(std::string path);
+namespace io {
+	std::unordered_map<std::string, FbxNode*> loadFbx(std::string path);
+	std::string loadTextFile(std::string path);
 };

@@ -1,0 +1,8 @@
+generations=2,
+angle=25.0,
+
+init=Trunk,
+
+rules: 
+Trunk=F[---F][+++F]TrunkBranch,
+Branch = FF[-F][+F]

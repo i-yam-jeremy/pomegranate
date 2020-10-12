@@ -1,5 +1,5 @@
 grammar Lsystem;		
-lsystem: generations=INT ',' initiator=commands ',' lrule (',' lrule)*;
+lsystem: 'generations' '=' generations=INT ',' 'angle' '=' angle=(FLOAT|INT) ',' 'init' '=' initiator=commands ',' 'rules' ':' lrule (',' lrule)*;
 lrule: name=ID '=' body=commands;
 commands: (sym | subruleSym)*;
 sym: MINUS | PLUS | LBRACK | RBRACK;
@@ -11,4 +11,5 @@ LBRACK	: '[';
 RBRACK	: ']';
 ID	: [A-Z][a-z]*;
 INT     : [0-9]+ ;
+FLOAT	: [0-9]+.[0-9]+;
 WS : (' ' | '\t' | '\r' | '\n')+ -> channel(HIDDEN);

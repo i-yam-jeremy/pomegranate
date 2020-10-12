@@ -14,8 +14,9 @@ namespace lsystem {
 
 class Lsystem {
 public:
-	Lsystem(int generations, std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules):
+	Lsystem(int generations, double angle, std::shared_ptr<std::vector<Command>> initiator, std::shared_ptr<std::vector<Rule>> rules):
 		generations(generations),
+		angle(angle),
 		state(initiator),
 		rules(rules) {}
 
@@ -26,6 +27,7 @@ private:
 
 private:
 	int generations;
+	double angle;
 	std::shared_ptr<std::vector<Command>> state;
 	std::shared_ptr<std::vector<Rule>> rules;
 };

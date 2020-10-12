@@ -1,8 +1,11 @@
 #pragma once
 
-#include "reader.h"
+#include "io.h"
 
-std::unordered_map<std::string, FbxNode*> IO::loadInputFbx(std::string path) {
+#include <fstream>
+#include <streambuf>
+
+std::unordered_map<std::string, FbxNode*> io::loadFbx(std::string path) {
 	FbxManager* sdkManager = FbxManager::Create();
 	FbxIOSettings* ios = FbxIOSettings::Create(sdkManager, IOSROOT);
 	ios->SetBoolProp(IMP_FBX_MATERIAL, true);
@@ -11,7 +14,7 @@ std::unordered_map<std::string, FbxNode*> IO::loadInputFbx(std::string path) {
 
 	FbxScene* scene = FbxScene::Create(sdkManager, "");
 	FbxImporter* importer = FbxImporter::Create(sdkManager, "");
-	importer->Initialize(path, -1, ios);
+	importer->Initialize(path.c_str(), -1, ios);
 	importer->Import(scene);
 	importer->Destroy();
 
@@ -24,4 +27,17 @@ std::unordered_map<std::string, FbxNode*> IO::loadInputFbx(std::string path) {
 	}
 
 	return geoByName;
+}
+
+std::string io::loadTextFile(std::string path) {
+	std::ifstream in(path);
+	std::string str;
+
+	in.seekg(0, std::ios::end);
+	str.reserve(in.tellg());
+	in.seekg(0, std::ios::beg);
+
+	str.assign((std::istreambuf_iterator<char>(in)),
+		std::istreambuf_iterator<char>());
+	return str;
 }
