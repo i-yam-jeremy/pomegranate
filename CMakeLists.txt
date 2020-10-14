@@ -16,6 +16,9 @@ link_directories(thirdparty/antlr-runtime)
 include_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/include")
 link_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/lib/vs2017/x64/debug")
 
+include_directories("${PROJECT_SOURCE_DIR}/thirdparty/glm")
+add_subdirectory("${PROJECT_SOURCE_DIR}/thirdparty/glm")
+
 include(SimpleANTLR)
 compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GENERATED_SOURCE_DIR})
 
