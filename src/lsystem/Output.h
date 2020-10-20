@@ -2,32 +2,35 @@
 
 #include <string>
 #include <vector>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include <fbxsdk.h>
 
 namespace lsystem {
 
 	class OutputSegment {
 	public:
-		OutputSegment(std::string type, FbxVector4 startPosition, FbxVector4 direction, double length) :
+		OutputSegment(std::string type, glm::mat4 mat) :
 			type(type),
-			startPosition(startPosition),
-			direction(direction),
-			length(length) {}
+			mat(mat) {}
 		std::string toString() {
-			return "<" + type
-				+ ", (" + std::to_string(startPosition[0])
-				+ "," + std::to_string(startPosition[1])
-				+ "," + std::to_string(startPosition[2])
-				+ "), (" + std::to_string(direction[0])
-				+ "," + std::to_string(direction[1])
-				+ "," + std::to_string(direction[2])
-				+ "), " + std::to_string(length);
+			return "<" + std::to_string(mat[3][0]) + ", " + std::to_string(mat[3][1]) + ", " +
+					std::to_string(mat[3][2]) + ">";
 		};
 
+		FbxAMatrix getFbxMatrix() {
+			FbxAMatrix m;
+			auto buf = m.Buffer();
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					buf[m][n] = mat[m][n];
+				}
+			}
+			return m;
+		}
+
 		std::string type;
-		FbxVector4 startPosition;
-		FbxVector4 direction;
-		double length;
+		glm::mat4 mat;
 	};
 
 	class Output {

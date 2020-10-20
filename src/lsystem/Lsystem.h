@@ -4,7 +4,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <fbxsdk.h>
 
 #include "Output.h"
 #include "Command.h"

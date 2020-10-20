@@ -1,6 +1,9 @@
 #include "Lsystem.h"
 
 #include <sstream>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "antlr4-runtime.h"
 #include "LsystemLexer.h"
@@ -9,25 +12,47 @@
 
 using namespace antlr4;
 using namespace lsystem;
+using namespace glm;
 
 namespace lsystem {
 	class EvalState {
 	public:
-		EvalState(FbxVector4 position, FbxVector4 angles, double length, double angleChange) :
-			position(position),
-			angles(angles),
-			length(length),
-			angleChange(angleChange) {}
+		EvalState():
+			mat(identity<mat4>()) {}
 
-		FbxVector4 getDirection() {
-			return FbxVector4(cos(angles[0]), sin(angles[0]), 0, 0);
+		void rotate(float yaw, float pitch, float roll) {
+			/*quat quaternion = glm::angleAxis(yaw, vec3(mat[0][0], mat[1][0], mat[2][0]));
+			mat *= toMat4(quaternion);
+
+			quaternion = glm::angleAxis(pitch, vec3(mat[0][1], mat[1][1], mat[2][1]));
+			mat *= toMat4(quaternion);
+
+			quaternion = glm::angleAxis(roll, vec3(mat[0][2], mat[1][2], mat[2][2]));
+			mat *= toMat4(quaternion);*/
+		}
+
+		void goForward() {
+			vec3 translateVec = mat * vec4(1, 0, 0, 1);
+			std::cout << "----------------" << std::endl;
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					std::cout << mat[m][n] << ", ";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << "---" << std::endl;
+			mat = translate(mat, translateVec);
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					std::cout << mat[m][n] << ", ";
+				}
+				std::cout << std::endl;
+			}
 		}
 
 	public:
-		FbxVector4 position;
-		FbxVector4 angles;
-		double length;
-		double angleChange;
+		mat4 mat;
+		float angleChange;
 	};
 }
 
@@ -67,26 +92,32 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	std::vector<EvalState> stack;
 
-	EvalState currentState(FbxVector4(0, 0, 0, 0), FbxVector4(0, 0, 0, 0), 1.0, angle * 3.1415926535 / 180);
+	EvalState currentState;
 
 	for (auto cmd : *state) {
 		switch (cmd.type) {
 		case FORWARD: {
-			auto dir = currentState.getDirection();
-			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.position, dir, currentState.length));
-			currentState.position += dir * currentState.length;
+			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat));
+			currentState.goForward();
 			break;
 		}
 		case YAW_LEFT:
-			currentState.angles[0] -= currentState.angleChange;
+			currentState.rotate(-currentState.angleChange, 0, 0);
 			break;
 		case YAW_RIGHT:
-			currentState.angles[0] += currentState.angleChange;
+			currentState.rotate(+currentState.angleChange, 0, 0);
+			break;
+		case PITCH_UP:
+			currentState.rotate(0, -currentState.angleChange, 0);
+			break;
+		case PITCH_DOWN:
+			currentState.rotate(0, +currentState.angleChange, 0);
 			break;
 		case ROLL_CW:
+			currentState.rotate(0, 0, -currentState.angleChange);
+			break;
 		case ROLL_CCW:
-		case PITCH_UP:
-		case PITCH_DOWN:
+			currentState.rotate(0, 0, +currentState.angleChange);
 			break;
 		case PUSH:
 			stack.push_back(currentState);
