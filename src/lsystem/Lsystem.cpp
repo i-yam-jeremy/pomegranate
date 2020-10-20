@@ -17,37 +17,31 @@ using namespace glm;
 namespace lsystem {
 	class EvalState {
 	public:
-		EvalState():
-			mat(identity<mat4>()) {}
+		EvalState(float angle):
+			mat(identity<mat4>()),
+			angleChange(angle) {}
 
 		void rotate(float yaw, float pitch, float roll) {
-			/*quat quaternion = glm::angleAxis(yaw, vec3(mat[0][0], mat[1][0], mat[2][0]));
-			mat *= toMat4(quaternion);
-
-			quaternion = glm::angleAxis(pitch, vec3(mat[0][1], mat[1][1], mat[2][1]));
-			mat *= toMat4(quaternion);
-
-			quaternion = glm::angleAxis(roll, vec3(mat[0][2], mat[1][2], mat[2][2]));
-			mat *= toMat4(quaternion);*/
+			yaw = radians(yaw);
+			pitch = radians(pitch);
+			roll = radians(roll);
+			if (yaw != 0) {
+				quat quaternion = glm::angleAxis(yaw, vec3(mat[2][0], mat[2][1], mat[2][2]));
+				mat *= toMat4(quaternion);
+			}
+			if (pitch != 0) {
+				quat quaternion = glm::angleAxis(pitch, vec3(mat[1][0], mat[1][1], mat[1][2]));
+				mat *= toMat4(quaternion);
+			}
+			if (roll != 0) {
+				quat quaternion = glm::angleAxis(roll, vec3(mat[0][0], mat[0][1], mat[0][2]));
+				mat *= toMat4(quaternion);
+			}
 		}
 
 		void goForward() {
-			vec3 translateVec = mat * vec4(1, 0, 0, 1);
-			std::cout << "----------------" << std::endl;
-			for (int m = 0; m < 4; m++) {
-				for (int n = 0; n < 4; n++) {
-					std::cout << mat[m][n] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << "---" << std::endl;
+			vec3 translateVec = mat * vec4(1, 0, 0, 0);
 			mat = translate(mat, translateVec);
-			for (int m = 0; m < 4; m++) {
-				for (int n = 0; n < 4; n++) {
-					std::cout << mat[m][n] << ", ";
-				}
-				std::cout << std::endl;
-			}
 		}
 
 	public:
@@ -92,7 +86,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	std::vector<EvalState> stack;
 
-	EvalState currentState;
+	EvalState currentState(angle);
 
 	for (auto cmd : *state) {
 		switch (cmd.type) {

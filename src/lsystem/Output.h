@@ -18,15 +18,8 @@ namespace lsystem {
 					std::to_string(mat[3][2]) + ">";
 		};
 
-		FbxAMatrix getFbxMatrix() {
-			FbxAMatrix m;
-			auto buf = m.Buffer();
-			for (int m = 0; m < 4; m++) {
-				for (int n = 0; n < 4; n++) {
-					buf[m][n] = mat[m][n];
-				}
-			}
-			return m;
+		FbxVector4 getTranslation() {
+			return FbxVector4(mat[3][0], mat[3][1], mat[3][2], 0);
 		}
 
 		std::string type;

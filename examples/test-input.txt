@@ -4,5 +4,5 @@ angle=25.0,
 init=Trunk,
 
 rules: 
-Trunk=F[---F][+++F]TrunkBranch,
+Trunk=F[---FF][+++FF]TrunkBranch,
 Branch = FF[-F][+F]/\\^&

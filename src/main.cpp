@@ -16,12 +16,13 @@ int main(int argc, char** argv) {
 		auto model = modelPieces[segment.type];
 		FbxNode* node = FbxNode::Create(sdkManager, "test");
 		node->SetNodeAttribute(model->GetMesh());
-		node->GetMesh()->SetPivot(segment.getFbxMatrix());
-		node->GetMesh()->ApplyPivot();
+		node->LclTranslation.Set(segment.getTranslation());
+		//node->LclRotation.Set(segment.getRotation());
 		auto result = scene->GetRootNode()->AddChild(node);
 		if (!result) {
 			std::cout << "ERROR: couldn't add node";
 		}
+		std::cout << segment.toString() << std::endl;
 	}
 
 	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.obj", scene);
