@@ -6,11 +6,13 @@
 #include <glm/mat4x4.hpp>
 #include <fbxsdk.h>
 
+using namespace glm;
+
 namespace lsystem {
 
 	class OutputSegment {
 	public:
-		OutputSegment(std::string type, glm::mat4 mat) :
+		OutputSegment(std::string type, mat4 mat) :
 			type(type),
 			mat(mat) {}
 		std::string toString() {
@@ -31,11 +33,15 @@ namespace lsystem {
 		}
 
 		FbxVector4 getScaling() {
-			return FbxVector4(1, 1, 1, 0);
+			return FbxVector4(
+				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
+				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
+				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
+				0);
 		}
 
 		std::string type;
-		glm::mat4 mat;
+		mat4 mat;
 	};
 
 	class Output {
