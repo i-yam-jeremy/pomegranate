@@ -20,24 +20,22 @@ namespace lsystem {
 					std::to_string(mat[3][2]) + ">";
 		};
 
-		FbxVector4 getTranslation() {
-			return FbxVector4(mat[3][0], mat[3][1], mat[3][2], 0);
+		FbxDouble3 getTranslation() {
+			return FbxDouble3(mat[3][0], mat[3][1], mat[3][2]);
 		}
 
-		FbxVector4 getRotation() {
-			return FbxVector4(
-				atan2(mat[2][1], mat[2][2]),
-				asin(mat[2][0]),
-				atan2(mat[1][0], mat[0][0]),
-				0);
+		FbxDouble3 getRotation() {
+			return FbxDouble3(
+				atan2(mat[2][1], mat[2][2])*180/3.1415926535,
+				asin(mat[2][0]) * 180 / 3.1415926535,
+				atan2(mat[1][0], mat[0][0]) * 180 / 3.1415926535);
 		}
 
-		FbxVector4 getScaling() {
-			return FbxVector4(
+		FbxDouble3 getScaling() {
+			return FbxDouble3(
 				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
 				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
-				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()),
-				0);
+				distance(vec3(mat[0][0], mat[0][1], mat[0][2]), vec3()));
 		}
 
 		std::string type;
