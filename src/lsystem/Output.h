@@ -22,6 +22,18 @@ namespace lsystem {
 			return FbxVector4(mat[3][0], mat[3][1], mat[3][2], 0);
 		}
 
+		FbxVector4 getRotation() {
+			return FbxVector4(
+				atan2(mat[2][1], mat[2][2]),
+				asin(mat[2][0]),
+				atan2(mat[1][0], mat[0][0]),
+				0);
+		}
+
+		FbxVector4 getScaling() {
+			return FbxVector4(1, 1, 1, 0);
+		}
+
 		std::string type;
 		glm::mat4 mat;
 	};

@@ -16,8 +16,13 @@ int main(int argc, char** argv) {
 		auto model = modelPieces[segment.type];
 		FbxNode* node = FbxNode::Create(sdkManager, "test");
 		node->SetNodeAttribute(model->GetMesh());
+
+		node->SetRotationPivotAsCenterRecursive();
+		node->SetRotationPivotAsCenterRecursive();
 		node->LclTranslation.Set(segment.getTranslation());
-		//node->LclRotation.Set(segment.getRotation());
+		node->LclRotation.Set(segment.getRotation());
+		node->LclScaling.Set(segment.getScaling());
+
 		auto result = scene->GetRootNode()->AddChild(node);
 		if (!result) {
 			std::cout << "ERROR: couldn't add node";
