@@ -35,7 +35,6 @@ int main(int argc, char** argv) {
 		if (!result) {
 			std::cout << "ERROR: couldn't add node";
 		}
-		std::cout << segment.toString() << std::endl;
 		i++;
 	}
 
