@@ -14,6 +14,7 @@ namespace lsystem {
 		POP,
 		FORWARD,
 		SKIP_FORWARD,
+		SCALE_LENGTH,
 		ID
 	};
 
@@ -27,8 +28,14 @@ namespace lsystem {
 			value(value),
 			type(type),
 			parentRuleType("") {}
+		Command(std::string value, CommandType type, float dataValue) :
+			value(value),
+			type(type),
+			parentRuleType(""),
+			dataValue(dataValue) {}
 		std::string value;
 		CommandType type;
 		std::string parentRuleType;
+		float dataValue = 0;
 	};
 }

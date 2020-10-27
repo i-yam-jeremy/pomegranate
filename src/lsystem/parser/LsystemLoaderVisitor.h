@@ -83,6 +83,12 @@ public:
 	  return NULL;
   }
 
+  virtual antlrcpp::Any visitScaleLength(LsystemParser::ScaleLengthContext* ctx) override {
+	  float scaleFactor = std::atof(ctx->value->getText().c_str());
+	  currentCommands->push_back(Command(ctx->getText(), CommandType::SCALE_LENGTH, scaleFactor));
+	  return NULL;
+  }
+
 private:
 	std::shared_ptr<std::vector<Command>> currentCommands;
 	std::shared_ptr<std::vector<Rule>> rules;

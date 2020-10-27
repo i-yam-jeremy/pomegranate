@@ -45,6 +45,10 @@ namespace lsystem {
 			mat = translationMat * mat;
 		}
 
+		void scaleLength(float factor) {
+			mat = scale(mat, vec3(factor, factor, factor));
+		}
+
 	public:
 		mat4 mat;
 		float angleChange;
@@ -97,6 +101,9 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 			break;
 		case SKIP_FORWARD:
 			currentState.goForward();
+			break;
+		case SCALE_LENGTH:
+			currentState.scaleLength(cmd.dataValue);
 			break;
 		case YAW_LEFT:
 			currentState.rotate(-currentState.angleChange, 0, 0);
