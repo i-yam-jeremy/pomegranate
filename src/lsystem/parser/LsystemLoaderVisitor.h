@@ -74,6 +74,9 @@ public:
 	  if (ctx->getText() == "F") {
 		  currentCommands->push_back(Command(ctx->getText(), CommandType::FORWARD, currentParentRule));
 	  }
+	  else if (ctx->getText() == "f") {
+		  currentCommands->push_back(Command(ctx->getText(), CommandType::SKIP_FORWARD, currentParentRule));
+	  }
 	  else {
 		  currentCommands->push_back(Command(ctx->getText(), CommandType::ID));
 	  }

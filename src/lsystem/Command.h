@@ -13,6 +13,7 @@ namespace lsystem {
 		PUSH,
 		POP,
 		FORWARD,
+		SKIP_FORWARD,
 		ID
 	};
 

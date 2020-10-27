@@ -26,22 +26,23 @@ namespace lsystem {
 			pitch = radians(pitch);
 			roll = radians(roll);
 			if (yaw != 0) {
-				quat quaternion = glm::angleAxis(yaw, vec3(mat[2][0], mat[2][1], mat[2][2]));
+				quat quaternion = glm::angleAxis(yaw, vec3(0, 0, 1));
 				mat *= toMat4(quaternion);
 			}
 			if (pitch != 0) {
-				quat quaternion = glm::angleAxis(pitch, vec3(mat[1][0], mat[1][1], mat[1][2]));
+				quat quaternion = glm::angleAxis(pitch, vec3(0, 1, 0));
 				mat *= toMat4(quaternion);
 			}
 			if (roll != 0) {
-				quat quaternion = glm::angleAxis(roll, vec3(mat[0][0], mat[0][1], mat[0][2]));
+				quat quaternion = glm::angleAxis(roll, vec3(1, 0, 0));
 				mat *= toMat4(quaternion);
 			}
 		}
 
 		void goForward() {
 			vec3 translateVec = mat * vec4(1, 0, 0, 0);
-			mat = translate(mat, translateVec);
+			auto translationMat = translate(identity<mat4>(), translateVec);
+			mat = translationMat * mat;
 		}
 
 	public:
@@ -90,11 +91,13 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	for (auto cmd : *state) {
 		switch (cmd.type) {
-		case FORWARD: {
+		case FORWARD:
 			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat));
 			currentState.goForward();
 			break;
-		}
+		case SKIP_FORWARD:
+			currentState.goForward();
+			break;
 		case YAW_LEFT:
 			currentState.rotate(-currentState.angleChange, 0, 0);
 			break;

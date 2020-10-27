@@ -26,7 +26,7 @@ namespace lsystem {
 
 		FbxDouble3 getRotation() {
 			return FbxDouble3(
-				atan2(mat[2][1], mat[2][2])*180/3.1415926535,
+				atan2(mat[2][1], mat[2][2]) * 180/3.1415926535,
 				asin(mat[2][0]) * 180 / 3.1415926535,
 				-atan2(mat[1][0], mat[0][0]) * 180 / 3.1415926535);
 		}

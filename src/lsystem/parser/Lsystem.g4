@@ -3,7 +3,7 @@ lsystem: 'generations' '=' generations=INT ',' 'angle' '=' angle=(FLOAT|INT) ','
 lrule: name=ID '=' body=commands;
 commands: (sym | subruleSym)*;
 sym: LEFT | RIGHT | ROLL_CW | ROLL_CCW | PITCH_UP | PITCH_DOWN | PUSH | POP;
-subruleSym: ID;
+subruleSym: ID | 'f';
 
 LEFT	: '-';
 RIGHT	: '+';

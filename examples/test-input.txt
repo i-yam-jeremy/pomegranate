@@ -1,8 +1,8 @@
 generations=4,
-angle=25.0,
+angle=30.0,
 
 init=Trunk,
 
 rules: 
-Trunk=FTrunk[-Trunk][+Trunk],
-Branch = FF[-F][+F]/\\^&
+Trunk=F[+++Branch]Trunk,
+Branch = FFFBranch
