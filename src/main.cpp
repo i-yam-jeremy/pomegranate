@@ -17,20 +17,15 @@ int main(int argc, char** argv) {
 		auto model = modelPieces[segment.type];
 		FbxNode* node = FbxNode::Create(sdkManager, ("object" + std::to_string(i)).c_str());
 		auto newMesh = (FbxMesh*) model->GetMesh()->Clone();
+
+		newMesh->SetPivot(segment.getFbxTransform());
+		newMesh->ApplyPivot();
+
 		node->SetNodeAttribute(newMesh);
 		auto res = scene->AddGeometry(newMesh);
 		if (!res) {
 			std::cout << "ERROR: Geometry could not be copied to new scene" << std::endl;
 		}
-
-		node->GetMesh()->SetPivot(segment.getFbxTransform());
-		node->GetMesh()->ApplyPivot();
-		/*node->LclRotation.Set(segment.getRotation());
-		node->LclScaling.Set(segment.getScaling());
-		node->LclTranslation.Set(segment.getTranslation());
-
-		auto r = node->LclRotation.Get();
-		std::cout << "LclRotation: " << r[0] << ", " << r[1] << ", " << r[2] << std::endl;*/
 
 		auto result = scene->GetRootNode()->AddChild(node);
 		if (!result) {
