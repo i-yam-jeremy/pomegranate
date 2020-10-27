@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
 		node->SetRotationPivotAsCenterRecursive();
 		node->SetRotationPivotAsCenterRecursive();
 		node->LclTranslation.Set(segment.getTranslation());
+		node->SetRotationOrder(FbxNode::eSourcePivot, FbxEuler::eOrderXYZ);
 		node->LclRotation.Set(segment.getRotation());
 		node->LclScaling.Set(segment.getScaling());
 

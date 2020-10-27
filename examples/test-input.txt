@@ -5,5 +5,4 @@ init=Trunk,
 
 rules: 
 Trunk = "(0.85)F[+++"(0.5)fBranch][////+++"(0.5)fBranch][\\\\\\\\+++"(0.5)fBranch]Trunk,
-Branch = "(0.85)F[+++fSmallbranch][////+++fSmallbranch][\\\\\\\\+++fSmallbranch]Branch,
-Smallbranch = F
+Branch = "(0.85)F[+++fSmallbranch][////+++fSmallbranch][\\\\\\\\+++fSmallbranch]Branch
