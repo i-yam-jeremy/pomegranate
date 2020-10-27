@@ -16,21 +16,21 @@ int main(int argc, char** argv) {
 	for (auto segment : out->getSegments()) {
 		auto model = modelPieces[segment.type];
 		FbxNode* node = FbxNode::Create(sdkManager, ("object" + std::to_string(i)).c_str());
-		node->SetNodeAttribute(model->GetMesh());
-		auto res = scene->AddGeometry(model->GetMesh());
+		auto newMesh = (FbxMesh*) model->GetMesh()->Clone();
+		node->SetNodeAttribute(newMesh);
+		auto res = scene->AddGeometry(newMesh);
 		if (!res) {
 			std::cout << "ERROR: Geometry could not be copied to new scene" << std::endl;
 		}
 
-		node->SetRotationPivotAsCenterRecursive();
-		node->SetRotationPivotAsCenterRecursive();
-		node->LclTranslation.Set(segment.getTranslation());
-		node->SetRotationOrder(FbxNode::eSourcePivot, FbxEuler::eOrderXYZ);
-		node->LclRotation.Set(segment.getRotation());
+		node->GetMesh()->SetPivot(segment.getFbxTransform());
+		node->GetMesh()->ApplyPivot();
+		/*node->LclRotation.Set(segment.getRotation());
 		node->LclScaling.Set(segment.getScaling());
+		node->LclTranslation.Set(segment.getTranslation());
 
 		auto r = node->LclRotation.Get();
-		std::cout << "LclRotation: " << r[0] << ", " << r[1] << ", " << r[2] << std::endl;
+		std::cout << "LclRotation: " << r[0] << ", " << r[1] << ", " << r[2] << std::endl;*/
 
 		auto result = scene->GetRootNode()->AddChild(node);
 		if (!result) {
