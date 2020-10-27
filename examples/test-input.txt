@@ -4,6 +4,6 @@ angle=30.0,
 init=Trunk,
 
 rules: 
-Trunk = "(0.9)F[+++fBranch][////+++fBranch][\\\\\\\\+++fBranch]Trunk,
-Branch = F[+++fSmallbranch][////+++fSmallbranch][\\\\\\\\+++fSmallbranch]Branch,
+Trunk = "(0.85)F[+++"(0.5)fBranch][////+++"(0.5)fBranch][\\\\\\\\+++"(0.5)fBranch]Trunk,
+Branch = "(0.85)F[+++fSmallbranch][////+++fSmallbranch][\\\\\\\\+++fSmallbranch]Branch,
 Smallbranch = F
