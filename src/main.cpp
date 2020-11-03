@@ -19,7 +19,6 @@ int main(int argc, char** argv) {
 		auto newMesh = (FbxMesh*) model->GetMesh()->Clone();
 
 		newMesh->SetPivot(segment.getFbxTransform());
-		newMesh->ApplyPivot();
 
 		node->SetNodeAttribute(newMesh);
 		auto res = scene->AddGeometry(newMesh);
@@ -34,7 +33,7 @@ int main(int argc, char** argv) {
 		i++;
 	}
 
-	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.obj", scene);
+	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.fbx", scene);
 
 	return 0;
 }
