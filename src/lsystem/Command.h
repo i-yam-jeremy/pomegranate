@@ -59,6 +59,6 @@ namespace lsystem {
 		/*
 			The first float argument to this command.
 		*/
-		std::shared_ptr<Value> dataValue;
+		std::shared_ptr<Value> dataValue = nullptr;
 	};
 }

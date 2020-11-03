@@ -28,35 +28,44 @@ antlrcpp::Any LsystemLoaderVisitor::visitCommands(LsystemParser::CommandsContext
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitSym(LsystemParser::SymContext* ctx) {
+	Command cmd("F", CommandType::FORWARD); // placeholder value (will be overwritten)
+
 	switch (ctx->getStart()->getType()) {
 	case LsystemLexer::LEFT:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::YAW_LEFT));
+		cmd = Command(ctx->getText(), CommandType::YAW_LEFT);
 		break;
 	case LsystemLexer::RIGHT:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::YAW_RIGHT));
+		cmd = Command(ctx->getText(), CommandType::YAW_RIGHT);
 		break;
 	case LsystemLexer::ROLL_CW:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::ROLL_CW));
+		cmd = Command(ctx->getText(), CommandType::ROLL_CW);
 		break;
 	case LsystemLexer::ROLL_CCW:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::ROLL_CCW));
+		cmd = Command(ctx->getText(), CommandType::ROLL_CCW);
 		break;
 	case LsystemLexer::PITCH_UP:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::PITCH_UP));
+		cmd = Command(ctx->getText(), CommandType::PITCH_UP);
 		break;
 	case LsystemLexer::PITCH_DOWN:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::PITCH_DOWN));
+		cmd = Command(ctx->getText(), CommandType::PITCH_DOWN);
 		break;
 	case LsystemLexer::PUSH:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::PUSH));
+		cmd = Command(ctx->getText(), CommandType::PUSH);
 		break;
 	case LsystemLexer::POP:
-		currentCommands.push_back(Command(ctx->getText(), CommandType::POP));
+		cmd = Command(ctx->getText(), CommandType::POP);
 		break;
 	default:
 		std::cerr << "Error no command symbol found: " << ctx->getText() << std::endl;
 		exit(1);
 	}
+
+	if (ctx->arg1 != nullptr) {
+		cmd.dataValue = visitNumWithDev(ctx->arg1);
+	}
+
+	currentCommands.push_back(cmd);
+
 	return NULL;
 }
 

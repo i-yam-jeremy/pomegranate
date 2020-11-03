@@ -94,6 +94,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 	EvalState currentState(angle);
 
 	for (auto& cmd : state) {
+		auto angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD:
 			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat));
@@ -106,22 +107,22 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 			currentState.scaleLength(cmd.dataValue->sample());
 			break;
 		case YAW_LEFT:
-			currentState.rotate(-currentState.angleChange->sample(), 0, 0);
+			currentState.rotate(-angle->sample(), 0, 0);
 			break;
 		case YAW_RIGHT:
-			currentState.rotate(+currentState.angleChange->sample(), 0, 0);
+			currentState.rotate(+angle->sample(), 0, 0);
 			break;
 		case PITCH_UP:
-			currentState.rotate(0, -currentState.angleChange->sample(), 0);
+			currentState.rotate(0, -angle->sample(), 0);
 			break;
 		case PITCH_DOWN:
-			currentState.rotate(0, +currentState.angleChange->sample(), 0);
+			currentState.rotate(0, +angle->sample(), 0);
 			break;
 		case ROLL_CW:
-			currentState.rotate(0, 0, -currentState.angleChange->sample());
+			currentState.rotate(0, 0, -angle->sample());
 			break;
 		case ROLL_CCW:
-			currentState.rotate(0, 0, +currentState.angleChange->sample());
+			currentState.rotate(0, 0, +angle->sample());
 			break;
 		case PUSH:
 			stack.push_back(currentState);
