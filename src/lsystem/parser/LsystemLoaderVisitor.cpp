@@ -1,9 +1,4 @@
-
-// Generated from /Users/jeremy/Documents/GitHub/pomegranate/src/lsystem/parser/Lsystem.g4 by ANTLR 4.8
-
-
 #include "LsystemLoaderVisitor.h"
-
 
 using namespace lsystem;
 
@@ -60,7 +55,7 @@ antlrcpp::Any LsystemLoaderVisitor::visitSym(LsystemParser::SymContext* ctx) {
 		std::cerr << "Error no command symbol found: " << ctx->getText() << std::endl;
 		exit(1);
 	}
-	return visitChildren(ctx);
+	return NULL;
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitSubruleSym(LsystemParser::SubruleSymContext* ctx) {

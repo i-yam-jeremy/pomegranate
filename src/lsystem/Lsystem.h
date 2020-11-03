@@ -11,26 +11,60 @@
 
 namespace lsystem {
 
-class Lsystem {
-public:
-	Lsystem(int generations, double angle, std::vector<Command> initiator, std::vector<Rule> rules):
-		generations(generations),
-		angle(angle),
-		state(initiator),
-		rules(rules) {}
+	/*
+		An Lsystem used for creating procedural geometry.
+	*/
+	class Lsystem {
+	public:
+		/*
+			Creates an Lsystem from the given parameters.
+			@param generations - The number of generations to apply when evaluating this Lsystem.
+			@param angle - The base angle of this Lsystem.
+			@param initiator - The started set of commands at generation 0.
+			@param rules - The ruleset to apply each generation.
+		*/
+		Lsystem(int generations, double angle, std::vector<Command> initiator, std::vector<Rule> rules):
+			generations(generations),
+			angle(angle),
+			state(initiator),
+			rules(rules) {}
 
-	std::shared_ptr<Output> compile();
-private:
-	void applySingleGeneration();
-	std::shared_ptr<Output> eval();
+		/*
+			Compiles and evaluates the Lsystem into a structure usable for instancing procedural geometry.
+			@return The evaluated Lsystem structure.
+		*/
+		std::shared_ptr<Output> compile();
+	private:
+		/*
+			Applies a single generation of the Lsystem ruleset to the current state.
+		*/
+		void applySingleGeneration();
+		/*
+			Evaluates all commands in the current state into an output structure for
+			instancing procedural geometry.
+			@return The evaluated Lsystem structure.
+		*/
+		std::shared_ptr<Output> eval();
 
-private:
-	int generations;
-	double angle;
-	std::vector<Command> state;
-	std::vector<Rule> rules;
-};
+	private:
+		/*
+			The number of generations to apply when evaluating this Lsystem.
+		*/
+		int generations;
+		/*
+			The base angle.
+		*/
+		double angle;
+		/*
+			The current ruleset state.
+		*/
+		std::vector<Command> state;
+		/*
+			The ruleset.
+		*/
+		std::vector<Rule> rules;
+	};
 
-std::shared_ptr<Output> compile(std::string source);
+	std::shared_ptr<Output> compile(std::string source);
 
 } // End namespace lsystem
