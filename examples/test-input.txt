@@ -1,5 +1,5 @@
 generations=8,
-angle=15.0,
+angle=15.0 dev 5.0,
 
 init=Trunk,
 
