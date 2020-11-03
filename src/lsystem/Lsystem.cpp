@@ -65,12 +65,12 @@ std::shared_ptr<Output> lsystem::Lsystem::compile() {
 
 void lsystem::Lsystem::applySingleGeneration() {
 	std::vector<Command> newCommands;
-	for (auto cmd : *state) {
+	for (auto& cmd : state) {
 		if (cmd.type == CommandType::ID) {
 			bool foundMatchingRule = false;
-			for (auto rule : *rules) {
+			for (auto& rule : rules) {
 				if (rule.name == cmd.value) {
-					newCommands.insert(newCommands.end(), rule.commands->begin(), rule.commands->end());
+					newCommands.insert(newCommands.end(), rule.commands.begin(), rule.commands.end());
 					foundMatchingRule = true;
 					break;
 				}
@@ -83,7 +83,7 @@ void lsystem::Lsystem::applySingleGeneration() {
 			newCommands.push_back(cmd);
 		}
 	}
-	*state = newCommands;
+	state = newCommands;
 }
 
 std::shared_ptr<Output> lsystem::Lsystem::eval() {
@@ -93,7 +93,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	EvalState currentState(angle);
 
-	for (auto cmd : *state) {
+	for (auto& cmd : state) {
 		switch (cmd.type) {
 		case FORWARD:
 			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat));

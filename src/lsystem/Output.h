@@ -9,50 +9,57 @@ using namespace glm;
 
 namespace lsystem {
 
+	/*
+		A single segment in the evaluated Lsystem output.
+	*/
 	class OutputSegment {
 	public:
+		/*
+			Creates an output segment of the given type with the given transform matrix.
+			@param type The name of the geometry type of this segment.
+			@param mat The transform matrix.
+		*/
 		OutputSegment(std::string type, mat4 mat) :
 			type(type),
 			mat(mat) {}
-		std::string toString() {
-			return "<" + std::to_string(mat[3][0]) + ", " + std::to_string(mat[3][1]) + ", " +
-					std::to_string(mat[3][2]) + ">";
-		};
 
-		FbxAMatrix getFbxTransform() {
-			FbxAMatrix M;
-			for (int m = 0; m < 4; m++) {
-				for (int n = 0; n < 4; n++) {
-					M[m][n] = mat[m][n];
-				}
-			}
-			return M;
-		}
+		/*
+			Returns the affine transform matrix for this output segment. 
+			Includes translation, rotation, and scaling.
+			@return The transform matrix.
+		*/
+		FbxAMatrix getFbxTransform();
 
+		/*
+			The name of the geometry type associated with this output segment.
+		*/
 		std::string type;
+		/*
+			The transform matrix for this output segment.
+		*/
 		mat4 mat;
 	};
 
+	/*
+		The entire output of the evaluated Lsystem.
+	*/
 	class Output {
 	public:
-		void addSegment(OutputSegment segment) {
-			segments.push_back(segment);
-		};
-
-		const std::vector<OutputSegment>& getSegments() {
-			return segments;
-		}
-
-		std::string toString() {
-			std::string s = "LsystemOutput {\n";
-			for (auto segment : segments) {
-				s += segment.toString() + "\n";
-			}
-			s += "}";
-			return s;
-		};
+		/*
+			Adds a segment to this output collection.
+			@param segment The segment to add.
+		*/
+		void addSegment(OutputSegment segment);
+		/*
+			Returns all segments in this output collection
+			@return All segments in this output collection.
+		*/
+		const std::vector<OutputSegment>& getSegments();
 
 	private:
+		/*
+			The segments in this output collection.
+		*/
 		std::vector<OutputSegment> segments;
 	};
 
