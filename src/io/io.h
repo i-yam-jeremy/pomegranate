@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <fbxsdk.h>
 
+/*
+	A namespace containing all functions related to file I/O for this project.
+*/
 namespace io {
 	/*
 		Returns a map from geometry name to FbxNode* which represents each geometry type in the input file.
