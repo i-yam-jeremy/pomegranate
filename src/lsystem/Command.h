@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <memory>
+
+#include "Value.h"
 
 namespace lsystem {
 	/*
@@ -34,7 +37,7 @@ namespace lsystem {
 			value(value),
 			type(type),
 			parentRuleType("") {}
-		Command(std::string value, CommandType type, float dataValue) :
+		Command(std::string value, CommandType type, std::shared_ptr<Value> dataValue) :
 			value(value),
 			type(type),
 			parentRuleType(""),
@@ -56,6 +59,6 @@ namespace lsystem {
 		/*
 			The first float argument to this command.
 		*/
-		float dataValue = 0;
+		std::shared_ptr<Value> dataValue;
 	};
 }

@@ -1,11 +1,13 @@
 #include "LsystemLoaderVisitor.h"
 
+#include "../Value.h"
+
 using namespace lsystem;
 
 antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* ctx) {
 	rules = std::vector<Rule>();
 	int generations = std::stoi(ctx->generations->getText());
-	double angle = std::stod(ctx->angle->getText());
+	std::shared_ptr<Value> angle = visitNumWithDev(ctx->angle);
 	std::vector<Command> initiator = visitCommands(ctx->initiator);
 	visitChildren(ctx);
 	return std::make_shared<Lsystem>(generations, angle, initiator, rules);
@@ -72,8 +74,24 @@ antlrcpp::Any LsystemLoaderVisitor::visitSubruleSym(LsystemParser::SubruleSymCon
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitScaleLength(LsystemParser::ScaleLengthContext* ctx) {
-	float scaleFactor = std::atof(ctx->value->getText().c_str());
+	std::shared_ptr<Value> scaleFactor = visitNumWithDev(ctx->value);
 	currentCommands.push_back(Command(ctx->getText(), CommandType::SCALE_LENGTH, scaleFactor));
 	return NULL;
+}
+
+antlrcpp::Any LsystemLoaderVisitor::visitNumWithDev(LsystemParser::NumWithDevContext* ctx) {
+	std::shared_ptr<Value> value = visitNum(ctx->value);
+	auto devCtx = ctx->dev;
+	if (devCtx == nullptr) {
+		return value;
+	}
+	else {
+		auto dev = std::atof(devCtx->getText().c_str());
+		return std::make_shared<Value>(value->sample(), dev);
+	}
+}
+
+antlrcpp::Any LsystemLoaderVisitor::visitNum(LsystemParser::NumContext* ctx) {
+	return std::make_shared<Value>(std::atof(ctx->getText().c_str()));
 }
 

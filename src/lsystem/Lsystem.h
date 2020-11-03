@@ -23,7 +23,7 @@ namespace lsystem {
 			@param initiator - The started set of commands at generation 0.
 			@param rules - The ruleset to apply each generation.
 		*/
-		Lsystem(int generations, double angle, std::vector<Command> initiator, std::vector<Rule> rules):
+		Lsystem(int generations, std::shared_ptr<Value> angle, std::vector<Command> initiator, std::vector<Rule> rules):
 			generations(generations),
 			angle(angle),
 			state(initiator),
@@ -54,7 +54,7 @@ namespace lsystem {
 		/*
 			The base angle.
 		*/
-		double angle;
+		std::shared_ptr<Value> angle;
 		/*
 			The current ruleset state.
 		*/

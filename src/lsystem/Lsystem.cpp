@@ -17,7 +17,7 @@ using namespace glm;
 namespace lsystem {
 	class EvalState {
 	public:
-		EvalState(float angle):
+		EvalState(std::shared_ptr<Value> angle):
 			mat(identity<mat4>()),
 			angleChange(angle) {}
 
@@ -51,7 +51,7 @@ namespace lsystem {
 
 	public:
 		mat4 mat;
-		float angleChange;
+		std::shared_ptr<Value> angleChange;
 	};
 }
 
@@ -103,25 +103,25 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 			currentState.goForward();
 			break;
 		case SCALE_LENGTH:
-			currentState.scaleLength(cmd.dataValue);
+			currentState.scaleLength(cmd.dataValue->sample());
 			break;
 		case YAW_LEFT:
-			currentState.rotate(-currentState.angleChange, 0, 0);
+			currentState.rotate(-currentState.angleChange->sample(), 0, 0);
 			break;
 		case YAW_RIGHT:
-			currentState.rotate(+currentState.angleChange, 0, 0);
+			currentState.rotate(+currentState.angleChange->sample(), 0, 0);
 			break;
 		case PITCH_UP:
-			currentState.rotate(0, -currentState.angleChange, 0);
+			currentState.rotate(0, -currentState.angleChange->sample(), 0);
 			break;
 		case PITCH_DOWN:
-			currentState.rotate(0, +currentState.angleChange, 0);
+			currentState.rotate(0, +currentState.angleChange->sample(), 0);
 			break;
 		case ROLL_CW:
-			currentState.rotate(0, 0, -currentState.angleChange);
+			currentState.rotate(0, 0, -currentState.angleChange->sample());
 			break;
 		case ROLL_CCW:
-			currentState.rotate(0, 0, +currentState.angleChange);
+			currentState.rotate(0, 0, +currentState.angleChange->sample());
 			break;
 		case PUSH:
 			stack.push_back(currentState);
@@ -131,7 +131,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 				std::cerr << "Error: Attempting to pop but nothing on Lsystem eval stack" << std::endl;
 				exit(1);
 			}
-			currentState = stack.back();
+ 			currentState = stack.back();
 			stack.pop_back();
 			break;
 		}

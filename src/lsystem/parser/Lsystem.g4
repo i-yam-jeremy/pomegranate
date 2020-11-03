@@ -1,10 +1,12 @@
 grammar Lsystem;		
-lsystem: 'generations' '=' generations=INT ',' 'angle' '=' angle=(FLOAT|INT) ',' 'init' '=' initiator=commands ',' 'rules' ':' lrule (',' lrule)*;
+lsystem: 'generations' '=' generations=INT ',' 'angle' '=' angle=numWithDev ',' 'init' '=' initiator=commands ',' 'rules' ':' lrule (',' lrule)*;
 lrule: name=ID '=' body=commands;
 commands: (sym | subruleSym | scaleLength)*;
 sym: LEFT | RIGHT | ROLL_CW | ROLL_CCW | PITCH_UP | PITCH_DOWN | PUSH | POP;
 subruleSym: ID | 'f';
-scaleLength: '"' '(' value=FLOAT ')';
+scaleLength: '"' '(' value=numWithDev ')';
+numWithDev: value=num ('dev' dev=num)?;
+num: FLOAT|INT;
 
 LEFT	: '-';
 RIGHT	: '+';

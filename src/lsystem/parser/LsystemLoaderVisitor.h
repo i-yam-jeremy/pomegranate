@@ -53,6 +53,18 @@ namespace lsystem {
 			@return NULL (ignored value)
 		*/
 		virtual antlrcpp::Any visitScaleLength(LsystemParser::ScaleLengthContext* ctx) override;
+		/*
+			Returns the parsed lsystem::Value with a standard deviation.
+			@param ctx The context.
+			@return lsystem::Value The parsed value with a standard deviation.
+		*/
+		virtual antlrcpp::Any visitNumWithDev(LsystemParser::NumWithDevContext* ctx) override;
+		/*
+			Returns a parsed float.
+			@param ctx The context.
+			@return float The parsed float value.
+		*/
+		virtual antlrcpp::Any visitNum(LsystemParser::NumContext* ctx) override;
 
 	private:
 		/*
