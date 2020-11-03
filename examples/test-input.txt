@@ -1,10 +1,10 @@
 generations=8,
-angle=15.0 dev 5.0,
+angle=15.0,
 
 init=Trunk,
 
 rules: 
-Trunk = "(0.85)F[+++"(0.5)fBranch][////////+++"(0.5)fBranch][\\\\\\\\\\\\\\\\+++"(0.5)fBranch]Trunk,
-Branch = "(0.85)+F[+++"(0.5)f"(1.33)Smallbranch][////////+++"(0.5)f"(1.33)Smallbranch][\\\\\\\\\\\\\\\\+++"(0.5)f"(1.33)Smallbranch]Branch,
-Smallbranch = "(0.85)+F[+++"(0.333)f"(3.0)Leaf][////////+++"(0.333)f"(3.0)Leaf][\\\\\\\\\\\\\\\\+++"(0.333)f"(3.0)Leaf]Smallbranch,
+Trunk = "(0.85)F[/(0 dev 60)+(45.0)"(0.5)fBranch][/(120 dev 60)+(45)"(0.5)fBranch][\\(120 dev 60)+(45)"(0.5)fBranch]Trunk,
+Branch = "(0.85)+F[/(0 dev 60)+(45.0)"(0.5)f"(1.33)Smallbranch][/(120 dev 60)+(45)"(0.5)f"(1.33)Smallbranch][\\(120 dev 60)+(45)"(0.5)f"(1.33)Smallbranch]Branch,
+Smallbranch = "(0.85)+F[/(0 dev 60)+(45.0)"(0.333)f"(3.0)Leaf][/(120 dev 60)+(45)"(0.333)f"(3.0)Leaf][\\(120 dev 60)+(45)"(0.333)f"(3.0)Leaf]Smallbranch,
 Leaf = F
