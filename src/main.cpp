@@ -3,6 +3,7 @@
 
 #include "io/io.h"
 #include "lsystem/Lsystem.h"
+#include "geo/geo.h"
 
 int main(int argc, char** argv) {
 	auto modelPieces = io::loadFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.fbx");
@@ -11,8 +12,9 @@ int main(int argc, char** argv) {
 
 	FbxManager* sdkManager = modelPieces.begin()->second->GetScene()->GetFbxManager();
 	FbxScene* scene = FbxScene::Create(sdkManager, "");
+	geo::convertLsystemToGeo(scene, out, "Tree");
 
-	long i = 0;
+	/*long i = 0;
 	for (auto segment : out->getSegments()) {
 		auto model = modelPieces[segment.type];
 		FbxNode* node = FbxNode::Create(sdkManager, ("object" + std::to_string(i)).c_str());
@@ -31,7 +33,7 @@ int main(int argc, char** argv) {
 			std::cout << "ERROR: couldn't add node";
 		}
 		i++;
-	}
+	}*/
 
 	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.fbx", scene);
 
