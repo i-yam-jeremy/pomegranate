@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(GENERATED_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated")
+set(GENERATED_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/lsystem/parser/generated")
 
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/antlr-runtime/src")
 link_directories(thirdparty/antlr-runtime)
