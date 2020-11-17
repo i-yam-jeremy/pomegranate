@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "antlr4-runtime.h"
-#include "LsystemLexer.h"
-#include "LsystemVisitor.h"
+#include "generated/LsystemLexer.h"
+#include "generated/LsystemVisitor.h"
 
 #include "../Lsystem.h"
 
