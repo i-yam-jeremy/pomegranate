@@ -22,6 +22,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/thirdparty/glm")
 include(SimpleANTLR)
 compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GENERATED_SOURCE_DIR})
 
+include_directories(${GENERATED_SOURCE_DIR})
+
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE Pomegranate-GENERATED_SRC "${GENERATED_SOURCE_DIR}/*.cpp")
 set(Pomegranate_SRC 

@@ -6,8 +6,8 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "antlr4-runtime.h"
-#include "parser/generated/LsystemLexer.h"
-#include "parser/generated/LsystemParser.h"
+#include "LsystemLexer.h"
+#include "LsystemParser.h"
 #include "parser/LsystemLoaderVisitor.h"
 
 using namespace antlr4;
