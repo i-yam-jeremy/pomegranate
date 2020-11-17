@@ -1,4 +1,4 @@
-generations=8,
+generations=4,
 angle=15.0,
 
 init=Trunk,
