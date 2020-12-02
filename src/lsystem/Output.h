@@ -18,10 +18,12 @@ namespace lsystem {
 			Creates an output segment of the given type with the given transform matrix.
 			@param type The name of the geometry type of this segment.
 			@param mat The transform matrix.
+			@param length The length of this segment.
 		*/
-		OutputSegment(std::string type, mat4 mat) :
+		OutputSegment(std::string type, mat4 mat, float length) :
 			type(type),
-			mat(mat) {}
+			mat(mat),
+		    length(length) {}
 
 		/*
 			Returns the affine transform matrix for this output segment. 
@@ -38,6 +40,10 @@ namespace lsystem {
 			The transform matrix for this output segment.
 		*/
 		mat4 mat;
+		/*
+			The length of this segment.
+		*/
+		float length;
 	};
 
 	/*

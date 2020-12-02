@@ -10,9 +10,29 @@
 #include "LsystemParser.h"
 #include "parser/LsystemLoaderVisitor.h"
 
+#include <fstream>
+
 using namespace antlr4;
 using namespace lsystem;
 using namespace glm;
+
+std::ofstream csvOut;
+
+float getang(vec3 a, vec3 b) {
+	return acos(dot(normalize(a), normalize(b))) * 180 / 3.14159265358;
+}
+
+bool isOrthogonal(mat4 m) {
+	float epsilon = 0.001;
+	vec3 b1 = vec3(m[0][0], m[0][1], m[0][2]);
+	vec3 b2 = vec3(m[1][0], m[1][1], m[1][2]);
+	vec3 b3 = vec3(m[2][0], m[2][1], m[2][2]);
+	bool b (abs(dot(b1, b2)) < epsilon && abs(dot(b2, b3)) < epsilon && abs(dot(b3, b1)) < epsilon);
+	if (!b) {
+		std::cout << getang(b1, b2) << ", " << getang(b2, b3) << ", " << getang(b3, b1) << std::endl;
+	}
+	return b;
+}
 
 namespace lsystem {
 	class EvalState {
@@ -25,37 +45,81 @@ namespace lsystem {
 			yaw = radians(yaw);
 			pitch = radians(pitch);
 			roll = radians(roll);
+
 			if (yaw != 0) {
-				quat quaternion = glm::angleAxis(yaw, vec3(0, 0, 1));
-				mat *= toMat4(quaternion);
+				/*mat4 rotM = glm::rotate(identity<mat4>(), yaw, vec3(0, 0, 1));
+				for (int m = 0; m < 4; m++) {
+					for (int n = 0; n < 4; n++) {
+						std::cout << rotM[n][m];
+						if (!(m == 3 && n == 3)) {
+							std::cout << ",";
+						}
+					}
+					std::cout << std::endl;
+				}
+				std::cout << std::endl;*/
+				mat = glm::rotate(identity<mat4>(), yaw, vec3(0, 0, 1)) * mat;
 			}
 			if (pitch != 0) {
-				quat quaternion = glm::angleAxis(pitch, vec3(0, 1, 0));
-				mat *= toMat4(quaternion);
+				mat = glm::rotate(identity<mat4>(), pitch, vec3(0, 1, 0)) * mat;
 			}
 			if (roll != 0) {
-				quat quaternion = glm::angleAxis(roll, vec3(1, 0, 0));
-				mat *= toMat4(quaternion);
+				mat = glm::rotate(identity<mat4>(), roll, vec3(1, 0, 0)) * mat;
 			}
+
+			std::cout << "Rot: " << isOrthogonal(mat) << std::endl;
 		}
 
 		void goForward() {
-			vec3 translateVec = mat * vec4(1, 0, 0, 0);
-			auto translationMat = translate(identity<mat4>(), translateVec);
-			mat = translationMat * mat;
+			vec3 translateVec = vec4(1*length, 0, 0, 0) * mat;
+			translation += translateVec;
+		}
+
+		void scaleUniform(float s) {
+			mat = scale(mat, vec3(s));
 		}
 
 		void scaleLength(float factor) {
-			mat = scale(mat, vec3(factor, factor, factor));
+			length *= factor;
+			/*
+			// backup translation
+			vec3 translation = vec3(mat[3][0], mat[3][1], mat[3][2]);
+
+			vec3 s = vec3(factor, 1, 1);
+			auto scaleMat = identity<mat4>();
+			scaleMat[0][0] = s.x;
+			scaleMat[1][1] = s.y;
+			scaleMat[2][2] = s.z;
+			mat = scaleMat * mat;
+
+		    // Copy back translation
+			mat[3][0] = translation.x;
+			mat[3][1] = translation.y;
+			mat[3][2] = translation.z;
+
+			for (int m = 0; m < 4; m++) {
+				for (int n = 0; n < 4; n++) {
+					csvOut << mat[m][n];
+					if (!(m == 3 && n == 3)) {
+						csvOut << ",";
+					}
+				}
+			}
+			csvOut << std::endl;
+
+			std::cout << "Scale: " << isOrthogonal(mat) << std::endl;*/
 		}
 
 	public:
+		float length = 1.0;
+		vec3 translation = vec3(0);
 		mat4 mat;
 		std::shared_ptr<Value> angleChange;
 	};
 }
 
 std::shared_ptr<Output> lsystem::Lsystem::compile() {
+	csvOut.open("C:/Users/Jeremy Berchtold/lsys-basis-vectors.csv");
 	for (int i = 0; i < generations; i++) {
 		applySingleGeneration();
 	}
@@ -97,7 +161,8 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 		auto angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD:
-			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat));
+			std::cout << "T: " << currentState.translation.x << ", " << currentState.translation.y << ", " << currentState.translation.z << std::endl;
+			out->addSegment(OutputSegment(cmd.parentRuleType, translate(currentState.mat, currentState.translation), currentState.length));
 			currentState.goForward();
 			break;
 		case SKIP_FORWARD:
@@ -105,6 +170,9 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 			break;
 		case SCALE_LENGTH:
 			currentState.scaleLength(cmd.dataValue->sample());
+			break;
+		case SCALE_ALL:
+			currentState.scaleUniform(cmd.dataValue->sample());
 			break;
 		case YAW_LEFT:
 			currentState.rotate(-angle->sample(), 0, 0);

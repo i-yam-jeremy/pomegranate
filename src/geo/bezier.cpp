@@ -12,15 +12,15 @@ void geo::instanceBezierCurves(FbxMesh* mesh, std::shared_ptr<lsystem::Output> l
 }
 
 void geo::instanceBezierCurve(FbxMesh* mesh, const lsystem::OutputSegment& segment) {
-	createCylinder(mesh, glm::vec3(0), 1, 0.5, 1, glm::vec3(0, 0, 1), 0.0f, 8, 1);
+	createCylinder(mesh, segment, 8, 1);
 }
 
-void geo::createCylinder(FbxMesh* mesh, vec3 pos, float radius1, float radius2, float length, vec3 dir, float axisRotAngle, int pointCount, int rings) {
+void geo::createCylinder(FbxMesh* mesh, const lsystem::OutputSegment& segment, int pointCount, int rings) {
 	int startIndex = mesh->GetControlPointsCount();
-	createCircle(mesh, pos, radius1, dir, axisRotAngle, pointCount);
+	createCircle(mesh, segment.mat, 0, pointCount);
 	for (int j = 0; j <= rings; j++) {
-		float interpFactor = float(j + 1) / (rings + 1);
-		createCircle(mesh, pos + interpFactor*length*dir, radius1 + interpFactor*(radius2-radius1), dir, axisRotAngle, pointCount);
+		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
+		createCircle(mesh, segment.mat, interpFactor, pointCount);
 		for (int i = 0; i < pointCount; i++) {
 			mesh->BeginPolygon();
 			mesh->AddPolygon(startIndex + i);
@@ -33,11 +33,11 @@ void geo::createCylinder(FbxMesh* mesh, vec3 pos, float radius1, float radius2, 
 	}
 }
 
-void geo::createCircle(FbxMesh* mesh, vec3 pos, float radius, vec3 dir, float axisRotAngle, int pointCount) {
+void geo::createCircle(FbxMesh* mesh, mat4 mat, float interpFactor, int pointCount) {
 	int startIndex = mesh->GetControlPointsCount();
 	for (int i = 0; i < pointCount; i++) {
-		vec3 circleOffset = radius*vec3(cos(i * 2.0f * M_PI / pointCount), sin(i * 2.0f * M_PI / pointCount), 0);
-		vec3 p = pos + circleOffset;
+		vec3 circleOffset = vec3(0.5*interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
+		vec3 p = mat * vec4(circleOffset, 1);
 		mesh->SetControlPointAt(FbxVector4(p.x, p.y, p.z), startIndex+i);
 	}
 }
