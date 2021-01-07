@@ -37,7 +37,7 @@ void geo::createCircle(FbxMesh* mesh, mat4 mat, vec3 translation, float interpFa
 	int startIndex = mesh->GetControlPointsCount();
 	for (int i = 0; i < pointCount; i++) {
 		vec3 circleOffset = vec3(0.5*interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
-		vec3 p = inverse(mat) * vec4(circleOffset, 1);
+		vec3 p = vec4(circleOffset, 1) * mat;
 		p += translation;
 		mesh->SetControlPointAt(FbxVector4(p.x, p.y, p.z), startIndex+i);
 	}

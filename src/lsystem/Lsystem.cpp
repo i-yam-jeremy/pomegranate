@@ -10,13 +10,9 @@
 #include "LsystemParser.h"
 #include "parser/LsystemLoaderVisitor.h"
 
-#include <fstream>
-
 using namespace antlr4;
 using namespace lsystem;
 using namespace glm;
-
-std::ofstream csvOut;
 
 float getang(vec3 a, vec3 b) {
 	return acos(dot(normalize(a), normalize(b))) * 180 / 3.14159265358;
@@ -66,8 +62,6 @@ namespace lsystem {
 			if (roll != 0) {
 				mat = glm::rotate(identity<mat4>(), roll, vec3(1, 0, 0)) * mat;
 			}
-
-			std::cout << "Rot: " << isOrthogonal(mat) << std::endl;
 		}
 
 		void goForward() {
@@ -81,33 +75,6 @@ namespace lsystem {
 
 		void scaleLength(float factor) {
 			length *= factor;
-			/*
-			// backup translation
-			vec3 translation = vec3(mat[3][0], mat[3][1], mat[3][2]);
-
-			vec3 s = vec3(factor, 1, 1);
-			auto scaleMat = identity<mat4>();
-			scaleMat[0][0] = s.x;
-			scaleMat[1][1] = s.y;
-			scaleMat[2][2] = s.z;
-			mat = scaleMat * mat;
-
-		    // Copy back translation
-			mat[3][0] = translation.x;
-			mat[3][1] = translation.y;
-			mat[3][2] = translation.z;
-
-			for (int m = 0; m < 4; m++) {
-				for (int n = 0; n < 4; n++) {
-					csvOut << mat[m][n];
-					if (!(m == 3 && n == 3)) {
-						csvOut << ",";
-					}
-				}
-			}
-			csvOut << std::endl;
-
-			std::cout << "Scale: " << isOrthogonal(mat) << std::endl;*/
 		}
 
 	public:
@@ -119,7 +86,6 @@ namespace lsystem {
 }
 
 std::shared_ptr<Output> lsystem::Lsystem::compile() {
-	csvOut.open("C:/Users/Jeremy Berchtold/lsys-basis-vectors.csv");
 	for (int i = 0; i < generations; i++) {
 		applySingleGeneration();
 	}
@@ -161,8 +127,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 		auto angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD:
-			std::cout << "T: " << currentState.translation.x << ", " << currentState.translation.y << ", " << currentState.translation.z << std::endl;
-			out->addSegment(OutputSegment(cmd.parentRuleType, translate(currentState.mat, currentState.translation), currentState.length));
+			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length));
 			currentState.goForward();
 			break;
 		case SKIP_FORWARD:
