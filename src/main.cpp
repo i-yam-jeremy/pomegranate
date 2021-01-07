@@ -14,27 +14,6 @@ int main(int argc, char** argv) {
 	FbxScene* scene = FbxScene::Create(sdkManager, "");
 	geo::convertLsystemToGeo(scene, out, "Tree");
 
-	/*long i = 0;
-	for (auto segment : out->getSegments()) {
-		auto model = modelPieces[segment.type];
-		FbxNode* node = FbxNode::Create(sdkManager, ("object" + std::to_string(i)).c_str());
-		auto newMesh = (FbxMesh*) model->GetMesh()->Clone();
-
-		newMesh->SetPivot(segment.getFbxTransform());
-
-		node->SetNodeAttribute(newMesh);
-		auto res = scene->AddGeometry(newMesh);
-		if (!res) {
-			std::cout << "ERROR: Geometry could not be copied to new scene" << std::endl;
-		}
-
-		auto result = scene->GetRootNode()->AddChild(node);
-		if (!result) {
-			std::cout << "ERROR: couldn't add node";
-		}
-		i++;
-	}*/
-
 	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.fbx", scene);
 
 	return 0;
