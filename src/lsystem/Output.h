@@ -20,9 +20,10 @@ namespace lsystem {
 			@param mat The transform matrix.
 			@param length The length of this segment.
 		*/
-		OutputSegment(std::string type, mat4 mat, float length) :
+		OutputSegment(std::string type, mat4 mat, vec3 translation, float length) :
 			type(type),
 			mat(mat),
+			translation(translation),
 		    length(length) {}
 
 		/*
@@ -40,6 +41,10 @@ namespace lsystem {
 			The transform matrix for this output segment.
 		*/
 		mat4 mat;
+		/*
+			The translation offset for this output segment.
+		*/
+		vec3 translation;
 		/*
 			The length of this segment.
 		*/

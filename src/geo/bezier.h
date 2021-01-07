@@ -9,5 +9,5 @@ namespace geo {
 	void instanceBezierCurves(FbxMesh* mesh, std::shared_ptr<lsystem::Output> lsystemOut);
 	void instanceBezierCurve(FbxMesh* mesh, const lsystem::OutputSegment& segment);
 	void createCylinder(FbxMesh* mesh, const lsystem::OutputSegment& segment, int pointCount, int rings);
-	void createCircle(FbxMesh* mesh, glm::mat4 mat, float interpFactor, int pointCount);
+	void createCircle(FbxMesh* mesh, glm::mat4 mat, glm::vec3 translation, float interpFactor, int pointCount);
 };
