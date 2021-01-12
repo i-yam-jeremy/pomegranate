@@ -10,9 +10,9 @@ int main(int argc, char** argv) {
 	
 	auto out = lsystem::compile(source);
 
-	auto mesh = geo::convertLsystemToGeo(out, "Tree");
+	auto mesh = geo::convertLsystemToGeo(out);
 
-	io::exportFbx("C:/Users/Jeremy\\ Berchtold/Documents/GitHub/pomegranate/examples/test-output.fbx", mesh);
+	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.obj", mesh);
 
 	return 0;
 }

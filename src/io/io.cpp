@@ -8,11 +8,8 @@
 #include <streambuf>
 
 void io::exportFbx(std::string path, Mesh& mesh) {
-	if (OpenMesh::IO::write_mesh(mesh, path)) {
-		std::cout << "Success" << std::endl;
-	}
-	else {
-		std::cout << "Fail" << std::endl;
+	if (!OpenMesh::IO::write_mesh(mesh, path)) {
+		std::cerr << "Error writing mesh to " << path << std::endl;
 	}
 }
 
