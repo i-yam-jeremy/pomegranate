@@ -13,9 +13,6 @@ set(GENERATED_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated")
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/antlr-runtime/src")
 link_directories(thirdparty/antlr-runtime)
 
-include_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/include")
-link_directories("C:/Program Files/Autodesk/FBX/FBX SDK/2020.0.1/lib/vs2017/x64/debug")
-
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/glm")
 add_subdirectory("${PROJECT_SOURCE_DIR}/thirdparty/glm")
 
@@ -25,10 +22,12 @@ compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GE
 include_directories(${GENERATED_SOURCE_DIR})
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC2 "${PROJECT_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE Pomegranate-GENERATED_SRC "${GENERATED_SOURCE_DIR}/*.cpp")
 set(Pomegranate_SRC 
 	${Pomegranate-GENERATED_SRC}
   	${Pomegranate-NONGENERATED_SRC}
+    ${Pomegranate-NONGENERATED_SRC2}
   )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -45,9 +44,11 @@ foreach(src_file ${Pomegranate_SRC})
           )
 endforeach(src_file ${Pomegranate_SRC})
 
+add_definitions(-D_USE_MATH_DEFINES)
 add_executable(Pomegranate
   ${Pomegranate_SRC}
   )
+target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
 
 add_dependencies(Pomegranate GenericParser)
-target_link_libraries(Pomegranate antlr4-runtime libfbxsdk)
+target_link_libraries(Pomegranate antlr4-runtime)

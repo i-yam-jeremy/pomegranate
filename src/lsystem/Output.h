@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <glm/mat4x4.hpp>
-#include <fbxsdk.h>
 
 using namespace glm;
 
@@ -25,13 +24,6 @@ namespace lsystem {
 			mat(mat),
 			translation(translation),
 		    length(length) {}
-
-		/*
-			Returns the affine transform matrix for this output segment. 
-			Includes translation, rotation, and scaling.
-			@return The transform matrix.
-		*/
-		FbxAMatrix getFbxTransform();
 
 		/*
 			The name of the geometry type associated with this output segment.

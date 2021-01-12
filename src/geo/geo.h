@@ -1,14 +1,16 @@
 #pragma once
 
-#include <fbxsdk.h>
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include "../lsystem/Lsystem.h"
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
 
 namespace geo {
 	/*
-		Converts the given Lsystem output into FBX geometry and adds it to the given scene
-		@param scene The FBX scene.
+		Converts the given Lsystem output into geometry.
 		@param lsystemOut The Lsystem output.
 		@param name The name of the FBX mesh and node to be created.
+		@return The generated geometry.
 	*/
-	void convertLsystemToGeo(FbxScene* scene, std::shared_ptr<lsystem::Output> lsystemOut, const char* name);
+	Mesh convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut, const char* name);
 };
