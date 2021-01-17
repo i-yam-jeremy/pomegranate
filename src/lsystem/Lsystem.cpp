@@ -15,22 +15,6 @@ using namespace antlr4;
 using namespace lsystem;
 using namespace glm;
 
-float getang(vec3 a, vec3 b) {
-	return acos(dot(normalize(a), normalize(b))) * 180 / 3.14159265358;
-}
-
-bool isOrthogonal(mat4 m) {
-	float epsilon = 0.001;
-	vec3 b1 = vec3(m[0][0], m[0][1], m[0][2]);
-	vec3 b2 = vec3(m[1][0], m[1][1], m[1][2]);
-	vec3 b3 = vec3(m[2][0], m[2][1], m[2][2]);
-	bool b (abs(dot(b1, b2)) < epsilon && abs(dot(b2, b3)) < epsilon && abs(dot(b3, b1)) < epsilon);
-	if (!b) {
-		std::cout << getang(b1, b2) << ", " << getang(b2, b3) << ", " << getang(b3, b1) << std::endl;
-	}
-	return b;
-}
-
 namespace lsystem {
 	class EvalState {
 	public:
@@ -44,17 +28,6 @@ namespace lsystem {
 			roll = radians(roll);
 
 			if (yaw != 0) {
-				/*mat4 rotM = glm::rotate(identity<mat4>(), yaw, vec3(0, 0, 1));
-				for (int m = 0; m < 4; m++) {
-					for (int n = 0; n < 4; n++) {
-						std::cout << rotM[n][m];
-						if (!(m == 3 && n == 3)) {
-							std::cout << ",";
-						}
-					}
-					std::cout << std::endl;
-				}
-				std::cout << std::endl;*/
 				mat = glm::rotate(identity<mat4>(), yaw, vec3(0, 0, 1)) * mat;
 			}
 			if (pitch != 0) {
