@@ -1,6 +1,7 @@
 #include "Lsystem.h"
 
 #include <sstream>
+#include <memory>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -82,6 +83,7 @@ namespace lsystem {
 		vec3 translation = vec3(0);
 		mat4 mat;
 		std::shared_ptr<Value> angleChange;
+		std::shared_ptr<OutputSegment> segment = nullptr;
 	};
 }
 
@@ -126,10 +128,17 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 	for (auto& cmd : state) {
 		auto angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
-		case FORWARD:
-			out->addSegment(OutputSegment(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length));
+		case FORWARD: {
+			auto parent = currentState.segment;
+			auto newSegment = std::make_shared<OutputSegment>(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length, parent);
+			if (parent != nullptr) {
+				parent->children.push_back(newSegment);
+			}
+			out->addSegment(newSegment);
 			currentState.goForward();
+			currentState.segment = newSegment;
 			break;
+		}
 		case SKIP_FORWARD:
 			currentState.goForward();
 			break;

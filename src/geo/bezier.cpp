@@ -5,7 +5,8 @@
 using namespace glm;
 
 void geo::instanceBezierCurves(Mesh& mesh, std::shared_ptr<lsystem::Output> lsystemOut) {
-	for (const auto& segment : lsystemOut->getSegments()) {
+	for (const auto segmentPtr : lsystemOut->getSegments()) {
+		const lsystem::OutputSegment segment = *segmentPtr;
 		geo::instanceBezierCurve(mesh, segment);
 	}
 }

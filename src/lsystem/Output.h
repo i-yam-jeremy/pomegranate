@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <glm/mat4x4.hpp>
 
 using namespace glm;
@@ -19,11 +20,12 @@ namespace lsystem {
 			@param mat The transform matrix.
 			@param length The length of this segment.
 		*/
-		OutputSegment(std::string type, mat4 mat, vec3 translation, float length) :
+		OutputSegment(std::string type, mat4 mat, vec3 translation, float length, std::shared_ptr<OutputSegment> parent) :
 			type(type),
 			mat(mat),
 			translation(translation),
-		    length(length) {}
+		    length(length),
+			parent(parent) {}
 
 		/*
 			The name of the geometry type associated with this output segment.
@@ -41,6 +43,14 @@ namespace lsystem {
 			The length of this segment.
 		*/
 		float length;
+		/*
+			The parent of this segment. If this is the root node, then the value is nullptr.
+		*/
+		std::shared_ptr<OutputSegment> parent = nullptr;
+		/*
+			The children of this segment.
+		*/
+		std::vector<std::shared_ptr<OutputSegment>> children;
 	};
 
 	/*
@@ -52,18 +62,18 @@ namespace lsystem {
 			Adds a segment to this output collection.
 			@param segment The segment to add.
 		*/
-		void addSegment(OutputSegment segment);
+		void addSegment(std::shared_ptr<OutputSegment> segment);
 		/*
 			Returns all segments in this output collection
 			@return All segments in this output collection.
 		*/
-		const std::vector<OutputSegment>& getSegments();
+		const std::vector<std::shared_ptr<OutputSegment>>& getSegments();
 
 	private:
 		/*
 			The segments in this output collection.
 		*/
-		std::vector<OutputSegment> segments;
+		std::vector<std::shared_ptr<OutputSegment>> segments;
 	};
 
 }
