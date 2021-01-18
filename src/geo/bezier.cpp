@@ -5,19 +5,25 @@
 using namespace glm;
 
 void geo::instanceBezierCurves(Mesh& mesh, std::shared_ptr<lsystem::Output> lsystemOut) {
+	MeshContext mc;
 	for (const auto segmentPtr : lsystemOut->getSegments()) {
 		const lsystem::OutputSegment segment = *segmentPtr;
-		geo::instanceBezierCurve(mesh, segment);
+		geo::instanceBezierCurve(mesh, segment, mc);
 	}
 }
 
-void geo::instanceBezierCurve(Mesh& mesh, const lsystem::OutputSegment& segment) {
-	createCylinder(mesh, segment, 8, 1);
+void geo::instanceBezierCurve(Mesh& mesh, const lsystem::OutputSegment& segment, MeshContext& mc) {
+	createCylinder(mesh, segment, 8, 0, mc);
 }
 
-void geo::createCylinder(Mesh& mesh, const lsystem::OutputSegment& segment, int pointCount, int rings) {
+void geo::createCylinder(Mesh& mesh, const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
 	std::vector<Mesh::VertexHandle> vertices;
-	createCircle(mesh, vertices, segment.mat, segment.translation, 0, pointCount);
+	if (segment.parent != nullptr && segment.parent->children.size() == 1) {
+		vertices = std::vector<Mesh::VertexHandle>(mc.getEndVertices(segment.parent->id));
+	}
+	else {
+		createCircle(mesh, vertices, segment.mat, segment.translation, 0, pointCount);
+	}
 	for (int j = 0; j <= rings; j++) {
 		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
 		createCircle(mesh, vertices, segment.mat, segment.translation, interpFactor, pointCount);
@@ -31,6 +37,7 @@ void geo::createCylinder(Mesh& mesh, const lsystem::OutputSegment& segment, int 
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
+	mc.setSegment(segment.id, Segment(vertices));
 }
 
 void geo::createCircle(Mesh& mesh, std::vector<Mesh::VertexHandle>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {

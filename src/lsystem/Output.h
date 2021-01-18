@@ -25,12 +25,18 @@ namespace lsystem {
 			mat(mat),
 			translation(translation),
 		    length(length),
-			parent(parent) {}
+			parent(parent) {
+			id = currentSegmentId++;
+		}
 
 		/*
 			The name of the geometry type associated with this output segment.
 		*/
 		std::string type;
+		/*
+			The ID of this segment.
+		*/
+		int id;
 		/*
 			The transform matrix for this output segment.
 		*/
@@ -51,6 +57,11 @@ namespace lsystem {
 			The children of this segment.
 		*/
 		std::vector<std::shared_ptr<OutputSegment>> children;
+	private:
+		/*
+			The ID of the next segment to be created.
+		*/
+		static int currentSegmentId;
 	};
 
 	/*
