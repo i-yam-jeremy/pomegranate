@@ -12,7 +12,8 @@ int main(int argc, char** argv) {
 
 	auto mesh = geo::convertLsystemToGeo(out);
 
-	io::exportFbx("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.obj", mesh);
+	io::exportCSVRig("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output-rig.csv", out);
+	io::exportMesh("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-output.obj", mesh);
 
 	return 0;
 }
