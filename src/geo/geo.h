@@ -10,8 +10,10 @@ namespace geo {
 	class Segment {
 	public:
 		Segment() {};
-		Segment(std::vector<Mesh::VertexHandle> endVertices) :
+		Segment(std::vector<Mesh::VertexHandle> startVertices, std::vector<Mesh::VertexHandle> endVertices) :
+			startVertices(startVertices),
 			endVertices(endVertices) {};
+		std::vector<Mesh::VertexHandle> startVertices;
 		std::vector<Mesh::VertexHandle> endVertices;
 	};
 
@@ -19,7 +21,8 @@ namespace geo {
 	public:
 		MeshContext() {};
 		void setSegment(int id, Segment seg);
-		const std::vector<Mesh::VertexHandle>& getEndVertices(int id);
+		bool hasSegment(int id);
+		Segment getSegment(int id);
 	private:
 		std::unordered_map<int, Segment> segments;
 	};

@@ -6,8 +6,12 @@ void geo::MeshContext::setSegment(int id, Segment segment) {
 	segments[id] = segment;
 }
 
-const std::vector<Mesh::VertexHandle>& geo::MeshContext::getEndVertices(int id) {
-	return segments[id].endVertices;
+bool geo::MeshContext::hasSegment(int id) {
+	return segments.find(id) != segments.end();
+}
+
+geo::Segment geo::MeshContext::getSegment(int id) {
+	return segments[id];
 }
 
 Mesh geo::convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut) {
