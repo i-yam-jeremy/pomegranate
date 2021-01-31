@@ -103,30 +103,27 @@ bool quadsIntersect(Mesh& mesh, const std::vector<Mesh::VertexHandle>& quad1, co
 	return false;
 }
 
-void generateQuad(std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
+void generateQuad(Mesh& mesh, std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
 	assert(loop1.size() == loop2.size());
-	dest.push_back(loop1[quadIndex]);
-	dest.push_back(loop1[(quadIndex + 1) % loop1.size()]);
-	dest.push_back(loop2[(quadIndex + bridgeOffset + 1) % loop1.size()]);
-	dest.push_back(loop2[(quadIndex + bridgeOffset) % loop1.size()]);
+	// Copies vertices to avoid non-manifold vertex/edge errors (complex vertex / complex edge)
+	dest.push_back(mesh.add_vertex(mesh.point(loop1[quadIndex])));
+	dest.push_back(mesh.add_vertex(mesh.point(loop1[(quadIndex + 1) % loop1.size()])));
+	dest.push_back(mesh.add_vertex(mesh.point(loop2[(quadIndex + bridgeOffset + 1) % loop1.size()])));
+	dest.push_back(mesh.add_vertex(mesh.point(loop2[(quadIndex + bridgeOffset) % loop1.size()])));
 }
 
-bool isValidEdgeLoopBridge(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int offset) {
-	assert(loop1.size() == loop2.size());
-	std::vector<Mesh::VertexHandle> quad1;
-	std::vector<Mesh::VertexHandle> quad2;
-	for (int i = 0; i < loop1.size(); i++) {
-		quad1.clear();
-		generateQuad(quad1, loop1, loop2, offset, i);
-		for (int j = i + 1; j < loop1.size(); j++) {
-			quad2.clear();
-			generateQuad(quad2, loop1, loop2, offset, j);
-			if (quadsIntersect(mesh, quad1, quad2)) {
-				return false;
-			}
-		}
+vec3 createOrthonormalVector(vec3 u1) {
+	vec3 offset; // used to offset u1 to create a linearly-independent vector
+	if (abs(u1.x) < 0.001 && abs(u1.y) < 0.001) {
+		offset = vec3(1, 0, 0);
 	}
-	return true;
+	else {
+		offset = vec3(0, 0, 1);
+	}
+	vec3 v2 = u1 + offset;
+	vec3 proj = (dot(u1, v2) / dot(u1, u1)) * u1; // project v2 onto u1
+	vec3 u2 = v2 - proj;
+	return normalize(u2);
 }
 
 mat3 createPlaneBasis(vec3 planeNormal) {
@@ -136,12 +133,12 @@ mat3 createPlaneBasis(vec3 planeNormal) {
 	basis[0][1] = planeNormal.y;
 	basis[0][2] = planeNormal.z;
 
-	vec3 v2 = vec3(1, -planeNormal.x / planeNormal.y, 0); // TODO FIXME fix for bad case where planeNormal.y = 0
+	vec3 v2 = createOrthonormalVector(planeNormal);
 	basis[1][0] = v2.x;
 	basis[1][1] = v2.y;
 	basis[1][2] = v2.z;
 
-	vec3 v2 = cross(planeNormal, v2);
+	vec3 v3 = cross(planeNormal, v2);
 	basis[2][0] = v3.x;
 	basis[2][1] = v3.y;
 	basis[2][2] = v3.z;
@@ -186,6 +183,20 @@ std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHand
 int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	auto planeNormal = normalize(loop1Normal + loop2Normal);
 	mat3 planeBasis = createPlaneBasis(planeNormal);
+
+	std::vector<Mesh::VertexHandle> planeFace;
+	vec3 p;
+	p = planeBasis * vec3(0, 1, 1);
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * vec3(0, 1, -1);
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * vec3(0, -1, -1);
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * vec3(0, -1, 1);
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	mesh.add_face(planeFace);
+
+
 	std::vector<vec2> loop1ProjectedPts = projectVertices(mesh, loop1, planeNormal, planeBasis);
 	std::vector<vec2> loop2ProjectedPts = projectVertices(mesh, loop2, planeNormal, planeBasis);
 	vec2 loop1ProjectedStartPt = loop1ProjectedPts[0];
@@ -206,10 +217,11 @@ int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& l
 void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(mesh, loop1, loop2, loop1Normal, loop2Normal);
+	std::cout << "Offset: " << offset << std::endl;
 	std::vector<Mesh::VertexHandle> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
-		generateQuad(quad, loop1, loop2, offset, j); ;
+		generateQuad(mesh, quad, loop1, loop2, offset, j);
 		mesh.add_face(quad);
 		std::cout << "Added quad face" << std::endl;
 	}
