@@ -129,19 +129,89 @@ bool isValidEdgeLoopBridge(Mesh& mesh, const std::vector<Mesh::VertexHandle>& lo
 	return true;
 }
 
-void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2) {
-	assert(loop1.size() == loop2.size());
-	for (int i = 0; i < loop1.size(); i++) {
-		if (isValidEdgeLoopBridge(mesh, loop1, loop2, i)) {
-			std::vector<Mesh::VertexHandle> quad;
-			for (int j = 0; j < loop1.size(); j++) {
-				quad.clear();
-				generateQuad(quad, loop1, loop2, i, j);
-				mesh.add_face(quad);
-				std::cout << "Added quad face" << std::endl;
-			}
-			break;
+mat3 createPlaneBasis(vec3 planeNormal) {
+	mat3 basis(1.0);
+
+	basis[0][0] = planeNormal.x;
+	basis[0][1] = planeNormal.y;
+	basis[0][2] = planeNormal.z;
+
+	vec3 v2 = vec3(1, -planeNormal.x / planeNormal.y, 0); // TODO FIXME fix for bad case where planeNormal.y = 0
+	basis[1][0] = v2.x;
+	basis[1][1] = v2.y;
+	basis[1][2] = v2.z;
+
+	vec3 v2 = cross(planeNormal, v2);
+	basis[2][0] = v3.x;
+	basis[2][1] = v3.y;
+	basis[2][2] = v3.z;
+
+	return basis;
+}
+
+vec2 projectPoint(Mesh::Point meshPoint, vec3 planeNormal, mat3 planeBasis) {
+	vec3 pt = vec3(meshPoint[0], meshPoint[1], meshPoint[2]);
+	vec3 projectedPoint = -dot(planeNormal, pt) * planeNormal + pt; 
+
+	vec3 projectedPointInPlaneSpace = inverse(planeBasis) * projectedPoint;
+	vec3 a = projectedPointInPlaneSpace;
+	assert(abs(projectedPointInPlaneSpace.x) < 0.001);
+	return vec2(projectedPointInPlaneSpace.y, projectedPointInPlaneSpace.z);
+	/*
+		dot(N, t*N + pt) = 0
+		N.x*(t*N.x + pt.x) + N.y*(t*N.y + pt.y) + N.z*(t*N.z + pt.z) = 0
+		t*(N.x*N.x + N.y*N.y + N.z*N.z) + dot(N, pt) = 0
+		||N|| = 1, so
+		t = -dot(N, pt)
+		therefore,
+		p = -dot(N, pt)*N + pt
+		*/
+}
+
+std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHandle>& points, vec3 planeNormal, mat3 planeBasis) {
+	std::vector<vec2> out;
+	vec2 center = vec2(0);
+	for (const auto p : points) {
+		auto projected = projectPoint(mesh.point(p), planeNormal, planeBasis);
+		out.push_back(projected);
+		center += projected;
+	}
+	center /= points.size();
+	for (int i = 0; i < out.size(); i++) {
+		out[i] -= center;
+	}
+	return out;
+}
+
+int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+	auto planeNormal = normalize(loop1Normal + loop2Normal);
+	mat3 planeBasis = createPlaneBasis(planeNormal);
+	std::vector<vec2> loop1ProjectedPts = projectVertices(mesh, loop1, planeNormal, planeBasis);
+	std::vector<vec2> loop2ProjectedPts = projectVertices(mesh, loop2, planeNormal, planeBasis);
+	vec2 loop1ProjectedStartPt = loop1ProjectedPts[0];
+	float loop1StartTheta = atan2(loop1ProjectedStartPt.y, loop1ProjectedStartPt.x);
+	int bestOffsetIndex = -1;
+	float minAngleDifference = 1000000000000;
+	for (int i = 0; i < loop2.size(); i++) {
+		float theta = atan2(loop2ProjectedPts[i].y, loop2ProjectedPts[i].x);
+		float angleDifference = abs(loop1StartTheta - theta);
+		if (angleDifference < minAngleDifference) {
+			minAngleDifference = angleDifference;
+			bestOffsetIndex = i;
 		}
+	}
+	return bestOffsetIndex;
+}
+
+void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+	assert(loop1.size() == loop2.size());
+	int offset = getEdgeLoopBridgeOffset(mesh, loop1, loop2, loop1Normal, loop2Normal);
+	std::vector<Mesh::VertexHandle> quad;
+	for (int j = 0; j < loop1.size(); j++) {
+		quad.clear();
+		generateQuad(quad, loop1, loop2, offset, j); ;
+		mesh.add_face(quad);
+		std::cout << "Added quad face" << std::endl;
 	}
 }
 
@@ -149,7 +219,9 @@ void generateBranchTopology(Mesh& mesh, std::shared_ptr<lsystem::OutputSegment> 
 	for (const auto child : parent->children) {
 		bridgeEdgeLoop(mesh,
 			           mc.getSegment(parent->id).endVertices,
-					   mc.getSegment(child->id).startVertices);
+					   mc.getSegment(child->id).startVertices,
+					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
+					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]));
 	}
 }
 
