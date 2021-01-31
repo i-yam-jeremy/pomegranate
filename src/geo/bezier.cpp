@@ -181,22 +181,8 @@ std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHand
 }
 
 int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
-	auto planeNormal = normalize(loop1Normal + loop2Normal);
+	auto planeNormal = normalize(normalize(loop1Normal) + normalize(loop2Normal));
 	mat3 planeBasis = createPlaneBasis(planeNormal);
-
-	std::vector<Mesh::VertexHandle> planeFace;
-	vec3 p;
-	p = planeBasis * vec3(0, 1, 1);
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * vec3(0, 1, -1);
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * vec3(0, -1, -1);
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * vec3(0, -1, 1);
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	mesh.add_face(planeFace);
-
-
 	std::vector<vec2> loop1ProjectedPts = projectVertices(mesh, loop1, planeNormal, planeBasis);
 	std::vector<vec2> loop2ProjectedPts = projectVertices(mesh, loop2, planeNormal, planeBasis);
 	vec2 loop1ProjectedStartPt = loop1ProjectedPts[0];
@@ -223,7 +209,6 @@ void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, co
 		quad.clear();
 		generateQuad(mesh, quad, loop1, loop2, offset, j);
 		mesh.add_face(quad);
-		std::cout << "Added quad face" << std::endl;
 	}
 }
 
