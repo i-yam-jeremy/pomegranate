@@ -106,10 +106,15 @@ bool quadsIntersect(Mesh& mesh, const std::vector<Mesh::VertexHandle>& quad1, co
 void generateQuad(Mesh& mesh, std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
 	assert(loop1.size() == loop2.size());
 	// Copies vertices to avoid non-manifold vertex/edge errors (complex vertex / complex edge)
-	dest.push_back(mesh.add_vertex(mesh.point(loop1[quadIndex])));
-	dest.push_back(mesh.add_vertex(mesh.point(loop1[(quadIndex + 1) % loop1.size()])));
-	dest.push_back(mesh.add_vertex(mesh.point(loop2[(quadIndex + bridgeOffset + 1) % loop1.size()])));
-	dest.push_back(mesh.add_vertex(mesh.point(loop2[(quadIndex + bridgeOffset) % loop1.size()])));
+	dest.push_back(loop1[quadIndex]);
+	dest.push_back(loop1[(quadIndex + 1) % loop1.size()]);
+	dest.push_back(loop2[(quadIndex + bridgeOffset + 1) % loop1.size()]);
+	dest.push_back(loop2[(quadIndex + bridgeOffset) % loop1.size()]);
+
+	for (int i = 0; i < dest.size(); i++) {
+		auto p = mesh.point(dest[i]);
+		dest[i] = mesh.add_vertex(p);
+	}
 }
 
 vec3 createOrthonormalVector(vec3 u1) {
