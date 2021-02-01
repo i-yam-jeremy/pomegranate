@@ -186,8 +186,29 @@ std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHand
 }
 
 int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
-	auto planeNormal = normalize(normalize(loop1Normal) + normalize(loop2Normal));
+	auto planeNormal = normalize(normalize(loop1Normal) + 0.0f*normalize(loop2Normal));
 	mat3 planeBasis = createPlaneBasis(planeNormal);
+
+	std::vector<Mesh::VertexHandle> planeFace;
+	auto offsetPoint = mesh.point(loop2[0]);
+	vec3 offset(offsetPoint[0], offsetPoint[1], offsetPoint[2]);
+	vec3 p;
+	p = planeBasis * (0.1f*vec3(0, 1, 1));
+	p += offset;
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * (0.1f * vec3(0, -1, 1));
+	p += offset;
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * (0.1f * vec3(0, -1, -1));
+	p += offset;
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	p = planeBasis * (0.1f * vec3(0, 1, -1));
+	p += offset;
+	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+	mesh.add_face(planeFace);
+
+
+
 	std::vector<vec2> loop1ProjectedPts = projectVertices(mesh, loop1, planeNormal, planeBasis);
 	std::vector<vec2> loop2ProjectedPts = projectVertices(mesh, loop2, planeNormal, planeBasis);
 	vec2 loop1ProjectedStartPt = loop1ProjectedPts[0];
