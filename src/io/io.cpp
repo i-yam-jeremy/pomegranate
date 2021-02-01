@@ -1,5 +1,3 @@
-#pragma once
-
 #include "io.h"
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
