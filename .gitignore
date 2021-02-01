@@ -4,3 +4,4 @@ bin/*
 .vs/*
 out/*
 dist/*
+build/*

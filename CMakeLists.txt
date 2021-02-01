@@ -6,15 +6,15 @@ project(Pomegranate)
 # compiler must be 11 or 14
 set(CMAKE_CXX_STANDARD 14)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
+include_directories(thirdparty/antlr4-cpp-runtime)
+add_subdirectory(thirdparty/antlr4-cpp-runtime)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(GENERATED_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated")
-
-include_directories("${PROJECT_SOURCE_DIR}/thirdparty/antlr-runtime/src")
-link_directories(thirdparty/antlr-runtime)
-
-include_directories("${PROJECT_SOURCE_DIR}/thirdparty/glm")
-add_subdirectory("${PROJECT_SOURCE_DIR}/thirdparty/glm")
 
 include(SimpleANTLR)
 compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GENERATED_SOURCE_DIR})
@@ -51,4 +51,5 @@ add_executable(Pomegranate
 target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
 
 add_dependencies(Pomegranate GenericParser)
-target_link_libraries(Pomegranate antlr4-runtime)
+add_dependencies(Pomegranate antlr4_cpp_runtime)
+target_link_libraries(Pomegranate antlr4_cpp_runtime ${CONAN_LIBS})
