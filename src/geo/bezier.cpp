@@ -186,44 +186,39 @@ std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHand
 }
 
 int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
-	auto planeNormal = normalize(normalize(loop1Normal) + 0.0f*normalize(loop2Normal));
-	mat3 planeBasis = createPlaneBasis(planeNormal);
+	assert(loop1.size() == loop2.size());
 
-	std::vector<Mesh::VertexHandle> planeFace;
-	auto offsetPoint = mesh.point(loop2[0]);
-	vec3 offset(offsetPoint[0], offsetPoint[1], offsetPoint[2]);
-	vec3 p;
-	p = planeBasis * (0.1f*vec3(0, 1, 1));
-	p += offset;
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * (0.1f * vec3(0, -1, 1));
-	p += offset;
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * (0.1f * vec3(0, -1, -1));
-	p += offset;
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	p = planeBasis * (0.1f * vec3(0, 1, -1));
-	p += offset;
-	planeFace.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
-	mesh.add_face(planeFace);
+	std::vector<vec3> loop1Points;
+	std::vector<vec3> loop2Points;
+
+	for (const auto& v : loop1) {
+		auto p = mesh.point(v);
+		loop1Points.push_back(vec3(p[0], p[1], p[2]));
+	}
+
+	for (const auto& v : loop2) {
+		auto p = mesh.point(v);
+		loop2Points.push_back(vec3(p[0], p[1], p[2]));
+	}
 
 
-
-	std::vector<vec2> loop1ProjectedPts = projectVertices(mesh, loop1, planeNormal, planeBasis);
-	std::vector<vec2> loop2ProjectedPts = projectVertices(mesh, loop2, planeNormal, planeBasis);
-	vec2 loop1ProjectedStartPt = loop1ProjectedPts[0];
-	float loop1StartTheta = atan2(loop1ProjectedStartPt.y, loop1ProjectedStartPt.x);
-	int bestOffsetIndex = -1;
-	float minAngleDifference = 1000000000000;
-	for (int i = 0; i < loop2.size(); i++) {
-		float theta = atan2(loop2ProjectedPts[i].y, loop2ProjectedPts[i].x);
-		float angleDifference = abs(loop1StartTheta - theta);
-		if (angleDifference < minAngleDifference) {
-			minAngleDifference = angleDifference;
-			bestOffsetIndex = i;
+	float minLength = 1000000000000.0f;
+	int bestOffset = -1;
+	for (int i = 0; i < loop1.size(); i++) {
+		float curLength = 0.0f;
+		for (int j = 0; j < loop1.size(); j++) {
+			curLength += length(loop1Points[j] - loop2Points[(j + i) % loop1.size()]);
+			if (curLength >= minLength) {
+				break;
+			}
+		}
+		if (curLength < minLength) {
+			minLength = curLength;
+			bestOffset = i;
 		}
 	}
-	return bestOffsetIndex;
+
+	return bestOffset;
 }
 
 void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
