@@ -5,8 +5,8 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <antlr4-runtime.h>
 
-#include "antlr4-runtime.h"
 #include "LsystemLexer.h"
 #include "LsystemParser.h"
 #include "parser/LsystemLoaderVisitor.h"

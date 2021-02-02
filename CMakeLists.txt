@@ -1,16 +1,12 @@
-# minimum required CMAKE version
 CMAKE_MINIMUM_REQUIRED(VERSION 3.7 FATAL_ERROR)
 
 project(Pomegranate)
 
-# compiler must be 11 or 14
 set(CMAKE_CXX_STANDARD 14)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-
-include_directories(thirdparty/antlr4-cpp-runtime)
-add_subdirectory(thirdparty/antlr4-cpp-runtime)
+find_package(openmesh REQUIRED)
+find_package(glm CONFIG REQUIRED)
+link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib) # for antlr4
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -22,12 +18,11 @@ compile_antlr("Lsystem" ${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4 ${GE
 include_directories(${GENERATED_SOURCE_DIR})
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
-file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC2 "${PROJECT_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE Pomegranate-GENERATED_SRC "${GENERATED_SOURCE_DIR}/*.cpp")
+message(STATUS ${Pomegranate-GENERATED_SRC})
 set(Pomegranate_SRC 
 	${Pomegranate-GENERATED_SRC}
   	${Pomegranate-NONGENERATED_SRC}
-    ${Pomegranate-NONGENERATED_SRC2}
   )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -48,8 +43,13 @@ add_definitions(-D_USE_MATH_DEFINES)
 add_executable(Pomegranate
   ${Pomegranate_SRC}
   )
-target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
 
 add_dependencies(Pomegranate GenericParser)
-add_dependencies(Pomegranate antlr4_cpp_runtime)
-target_link_libraries(Pomegranate antlr4_cpp_runtime ${CONAN_LIBS})
+target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
+
+target_include_directories(Pomegranate PRIVATE ${OPENMESH_INCLUDE_DIRS})
+target_link_libraries(Pomegranate PRIVATE ${OPENMESH_LIBRARIES})
+target_link_libraries(Pomegranate PRIVATE glm)
+target_include_directories(Pomegranate PRIVATE ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/antlr4-runtime)
+target_link_libraries(Pomegranate PRIVATE antlr4-runtime)
+target_link_libraries(Pomegranate PRIVATE uuid)
