@@ -18,7 +18,6 @@ function(compile_antlr GRAMMAR_NAME GRAMMAR_FILE GENERATED_SOURCE_DIR)
 
 	set(ANTLR_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr-4.8-complete.jar)
 
-	add_custom_target(GenericParser DEPENDS ${Pomegranate-GENERATED_SRC})
 	add_custom_command(OUTPUT ${Pomegranate-GENERATED_SRC}
 	   COMMAND 
 	   ${CMAKE_COMMAND} -E make_directory ${GENERATED_SOURCE_DIR}
@@ -28,4 +27,5 @@ function(compile_antlr GRAMMAR_NAME GRAMMAR_FILE GENERATED_SOURCE_DIR)
 	   DEPENDS ${GRAMMAR_FILE}
 	   COMMENT "Compiling ${GRAMMAR_NAME} grammar"
 	   )
+	set(Pomegranate-GENERATED_SRC ${Pomegranate-GENERATED_SRC} PARENT_SCOPE)
 endfunction(compile_antlr)
