@@ -10,12 +10,12 @@ link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib) # for antl
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-include(LsystemANTLRParser)
+include(LsystemParser)
 include_directories(${GENERATED_SOURCE_DIR})
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 set(Pomegranate_SRC 
-	${Pomegranate-GENERATED_SRC}
+	#${Pomegranate-GENERATED_SRC}
   	${Pomegranate-NONGENERATED_SRC}
   )
 
@@ -35,8 +35,9 @@ endforeach(src_file ${Pomegranate_SRC})
 
 add_definitions(-D_USE_MATH_DEFINES)
 add_executable(Pomegranate
-  ${Pomegranate_SRC}
-  )
+    $<TARGET_OBJECTS:LsystemParser>
+    ${Pomegranate_SRC}
+)
 
 target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
 

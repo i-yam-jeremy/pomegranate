@@ -30,4 +30,8 @@ set(GENERATED_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated")
 	   DEPENDS ${GRAMMAR_FILE}
 	   COMMENT "Compiling ${GRAMMAR_NAME} grammar"
 	   )
-	set(Pomegranate-GENERATED_SRC ${Pomegranate-GENERATED_SRC} PARENT_SCOPE)
+
+add_library(LsystemParser OBJECT ${Pomegranate-GENERATED_SRC})
+target_include_directories(LsystemParser PRIVATE ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/antlr4-runtime)
+target_link_libraries(LsystemParser PRIVATE antlr4-runtime)
+target_link_libraries(LsystemParser PRIVATE uuid)
