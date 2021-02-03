@@ -1,4 +1,7 @@
-function(compile_antlr GRAMMAR_NAME GRAMMAR_FILE GENERATED_SOURCE_DIR)
+set(GRAMMAR_NAME "Lsystem")
+set(GRAMMAR_FILE "${PROJECT_SOURCE_DIR}/src/lsystem/parser/Lsystem.g4")
+set(GENERATED_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated")
+
 	set(Pomegranate-GENERATED_SRC
 	   ${GENERATED_SOURCE_DIR}/${GRAMMAR_NAME}Lexer.cpp 
 	   ${GENERATED_SOURCE_DIR}/${GRAMMAR_NAME}Parser.cpp
@@ -28,4 +31,3 @@ function(compile_antlr GRAMMAR_NAME GRAMMAR_FILE GENERATED_SOURCE_DIR)
 	   COMMENT "Compiling ${GRAMMAR_NAME} grammar"
 	   )
 	set(Pomegranate-GENERATED_SRC ${Pomegranate-GENERATED_SRC} PARENT_SCOPE)
-endfunction(compile_antlr)
