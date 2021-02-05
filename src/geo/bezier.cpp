@@ -6,7 +6,7 @@ using namespace glm;
 
 void geo::instanceBezierCurves(Mesh& mesh, std::shared_ptr<lsystem::Output> lsystemOut) {
 	MeshContext mc;
-	for (const auto segmentPtr : lsystemOut->getSegments()) {
+	for (const auto& segmentPtr : lsystemOut->getSegments()) {
 		const lsystem::OutputSegment segment = *segmentPtr;
 		geo::instanceBezierCurve(mesh, segment, mc);
 	}
@@ -18,7 +18,7 @@ void geo::instanceBezierCurve(Mesh& mesh, const lsystem::OutputSegment& segment,
 
 bool isLastChild(const lsystem::OutputSegment& child, geo::MeshContext& mc) {
 	if (child.parent == nullptr) return false;
-	for (const auto segment : child.parent->children) {
+	for (const auto& segment : child.parent->children) {
 		if (segment->id > child.id) return false;
 	}
 	return true;
@@ -234,7 +234,7 @@ void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, co
 }
 
 void generateBranchTopology(Mesh& mesh, std::shared_ptr<lsystem::OutputSegment> parent, geo::MeshContext& mc) {
-	for (const auto child : parent->children) {
+	for (const auto& child : parent->children) {
 		bridgeEdgeLoop(mesh,
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
