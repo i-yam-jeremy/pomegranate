@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.7 FATAL_ERROR)
 
 project(Pomegranate)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(openmesh REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -10,12 +10,13 @@ link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib) # for antl
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+include_directories("${PROJECT_SOURCE_DIR}/thirdparty/include")
+
 include(LsystemParser)
 include_directories(${GENERATED_SOURCE_DIR})
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 set(Pomegranate_SRC 
-	#${Pomegranate-GENERATED_SRC}
   	${Pomegranate-NONGENERATED_SRC}
   )
 
