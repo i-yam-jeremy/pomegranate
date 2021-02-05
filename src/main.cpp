@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 	argv[2] = "11";
 
 	if (!(2 <= argc && argc <= 4)) {
-		std::cerr << "Usage: pomegranate input_file [seed] [output_file_basename]" << std::endl;
+		std::cerr << "Usage: pomegranate input_file [seed [output_file_basename]]" << std::endl;
 		exit(1);
 	}
 	std::string inputFile = argv[1];
