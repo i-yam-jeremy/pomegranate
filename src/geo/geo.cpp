@@ -10,7 +10,7 @@ bool geo::MeshContext::hasSegment(int id) {
 	return segments.find(id) != segments.end();
 }
 
-geo::Segment geo::MeshContext::getSegment(int id) {
+geo::Segment& geo::MeshContext::getSegment(int id) {
 	return segments[id];
 }
 
