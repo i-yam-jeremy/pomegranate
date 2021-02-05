@@ -12,3 +12,9 @@ POMegrante is a procedural organic modeling tool used to generate trees from sma
 
 ### Overview
 ![Overview Image](readme_resources/Overview.png)
+
+### Third-Party Libraries
+* [OpenMesh](https://www.graphics.rwth-aachen.de/software/openmesh/)
+* [glm](https://glm.g-truc.net/0.9.9/index.html)
+* [ANTLR](https://www.antlr.org/)
+* [flags](https://github.com/sailormoon/flags)
