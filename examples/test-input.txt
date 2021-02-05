@@ -4,7 +4,7 @@ angle=15.0,
 init=Start,
 
 rules:
-Start = "(1.0)Trunk,
+Start = [(0.5)"(1.0)Trunk],
 Trunk = @(0.85)F+(0 dev 30)[/(0 dev 60)+(45.0)@(0.5)fBranch][/(120 dev 60)+(45)@(0.5)fBranch][\\(120 dev 60)+(45)@(0.5)fBranch]@(0.2)f@(5)Trunk,
 Branch = +@(0.2)f@(5)@(0.85)F+(0 dev 30)[/(0 dev 60)+(45.0)@(0.5)f@(1.33)Smallbranch][/(120 dev 60)+(45)@(0.5)f@(1.33)Smallbranch][\\(120 dev 60)+(45)@(0.5)f@(1.33)Smallbranch]Branch,
 Smallbranch = +@(0.85)F+(0 dev 30)[/(0 dev 60)+(45.0)@(0.333)f@(3.0)Leaf][/(120 dev 60)+(45)@(0.333)f@(3.0)Leaf][\\(120 dev 60)+(45)@(0.333)f@(3.0)Leaf]Smallbranch,

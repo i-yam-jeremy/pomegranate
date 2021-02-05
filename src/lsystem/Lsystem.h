@@ -63,6 +63,10 @@ namespace lsystem {
 			The ruleset.
 		*/
 		std::vector<Rule> rules;
+		/*
+		
+		*/
+		std::shared_ptr<Value> branchChanceCalculator = Value::createUniform(0, 1);
 	};
 
 	std::shared_ptr<Output> compile(std::string source);

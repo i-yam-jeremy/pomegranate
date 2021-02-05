@@ -99,11 +99,11 @@ antlrcpp::Any LsystemLoaderVisitor::visitNumWithDev(LsystemParser::NumWithDevCon
 	}
 	else {
 		auto dev = std::atof(devCtx->getText().c_str());
-		return std::make_shared<Value>(value->sample(), dev);
+		return Value::createNormal(value->sample(), dev);
 	}
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitNum(LsystemParser::NumContext* ctx) {
-	return std::make_shared<Value>(std::atof(ctx->getText().c_str()));
+	return Value::createConstant(std::atof(ctx->getText().c_str()));
 }
 

@@ -57,6 +57,7 @@ namespace lsystem {
 		mat4 mat;
 		std::shared_ptr<Value> angleChange;
 		std::shared_ptr<OutputSegment> segment = nullptr;
+		bool dummyState = false;
 	};
 }
 
@@ -99,10 +100,13 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 	EvalState currentState(angle);
 
 	for (auto& cmd : state) {
-		auto angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
+		auto& angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD: {
-			auto parent = currentState.segment;
+			if (currentState.dummyState) {
+				break;
+			}
+			auto& parent = currentState.segment;
 			auto newSegment = std::make_shared<OutputSegment>(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length, parent);
 			if (parent != nullptr) {
 				parent->children.push_back(newSegment);
@@ -139,9 +143,16 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 		case ROLL_CCW:
 			currentState.rotate(0, 0, +angle->sample());
 			break;
-		case PUSH:
+		case PUSH: {
+			if (cmd.dataValue != nullptr) {
+				float branchChance = cmd.dataValue->sample();
+				if (!(branchChanceCalculator->sample() < branchChance)) {
+					currentState.dummyState = true;
+				}
+			}
 			stack.push_back(currentState);
 			break;
+		}
 		case POP:
 			if (stack.size() == 0) {
 				std::cerr << "Error: Attempting to pop but nothing on Lsystem eval stack" << std::endl;
