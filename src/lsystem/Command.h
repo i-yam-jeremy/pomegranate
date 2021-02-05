@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "Value.h"
+#include "../value/Value.h"
 
 namespace lsystem {
 	/*

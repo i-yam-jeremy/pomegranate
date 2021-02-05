@@ -3,7 +3,9 @@
 #include <random>
 #include <iostream>
 
-class ConstantRNG : public lsystem::RNG {
+#include "Random.h"
+
+class ConstantRNG : public RNG {
 public:
 	ConstantRNG(float c) {
 		value = c;
@@ -17,29 +19,28 @@ private:
 	float value;
 };
 
-class NormalRNG : public lsystem::RNG {
+class NormalRNG : public RNG {
 public:
 	NormalRNG(float mean, float stddev) {
 		dist = std::normal_distribution<float>(mean, stddev);
 	}
 
 	float sample() {
-		return dist(generator);
+		return dist(Random::generator);
 	}
 
 private:
 	std::normal_distribution<float> dist;
-	std::default_random_engine generator;
 };
 
-lsystem::Value::Value(float c) {
+Value::Value(float c) {
 	rng = std::make_unique<ConstantRNG>(c);
 }
 
-lsystem::Value::Value(float mean, float dev) {
+Value::Value(float mean, float dev) {
 	rng = std::make_unique<NormalRNG>(mean, dev);
 }
 
-float lsystem::Value::sample() {
+float Value::sample() {
 	return rng->sample();
 }
