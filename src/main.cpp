@@ -10,7 +10,7 @@
 int main(int argc, char** argv) {
 	argc = 3;
 	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
-	argv[2] = "10";
+	argv[2] = "11";
 
 	if (argc != 3 && argc != 4) {
 		std::cerr << "Usage: pomegranate input_file seed [output_file_basename]" << std::endl;

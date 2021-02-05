@@ -144,13 +144,13 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 			currentState.rotate(0, 0, +angle->sample());
 			break;
 		case PUSH: {
+			stack.push_back(currentState);
 			if (cmd.dataValue != nullptr) {
 				float branchChance = cmd.dataValue->sample();
 				if (!(branchChanceCalculator->sample() < branchChance)) {
 					currentState.dummyState = true;
 				}
 			}
-			stack.push_back(currentState);
 			break;
 		}
 		case POP:
