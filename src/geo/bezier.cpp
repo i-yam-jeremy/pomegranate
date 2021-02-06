@@ -87,22 +87,6 @@ bool edgeIntersectsQuad(Mesh& mesh, const Mesh::VertexHandle v1, const Mesh::Ver
 	return false;
 }
 
-bool quadsIntersect(Mesh& mesh, const std::vector<Mesh::VertexHandle>& quad1, const std::vector<Mesh::VertexHandle>& quad2) {
-	assert(quad1.size() == 4);
-	assert(quad2.size() == 4);
-	for (int i = 0; i < 4; i++) {
-		if (edgeIntersectsQuad(mesh, quad1[i], quad1[(i + 1) % 4], quad2)) {
-			return true;
-		}
-	}
-	for (int i = 0; i < 4; i++) {
-		if (edgeIntersectsQuad(mesh, quad2[i], quad2[(i + 1) % 4], quad1)) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void generateQuad(Mesh& mesh, std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
 	assert(loop1.size() == loop2.size());
 	// Copies vertices to avoid non-manifold vertex/edge errors (complex vertex / complex edge)
@@ -221,25 +205,57 @@ int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& l
 	return bestOffset;
 }
 
-void bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+std::vector<Mesh::FaceHandle> bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(mesh, loop1, loop2, loop1Normal, loop2Normal);
 	std::cout << "Offset: " << offset << std::endl;
+	std::vector<Mesh::FaceHandle> bridgeFaces;
 	std::vector<Mesh::VertexHandle> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
 		generateQuad(mesh, quad, loop1, loop2, offset, j);
-		mesh.add_face(quad);
+		bridgeFaces.push_back(mesh.add_face(quad));
+	}
+	return bridgeFaces;
+}
+
+struct IntersectionPoint {
+	vec3 pos;
+	Mesh::EdgeHandle edge;
+	Mesh::FaceHandle other;
+};
+
+void quadsIntersect(const Mesh::FaceHandle quad1, const Mesh::FaceHandle quad2, std::vector<IntersectionPoint>& intersectionPoints) {
+	// TODO
+}
+
+void findBridgeIntersections(const std::vector<Mesh::FaceHandle>& bridge, const std::vector<Mesh::FaceHandle>& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
+	for (int i = 0; i < bridge.size(); i++) {
+		for (int j = 0; j < otherBridge.size(); j++) {
+			quadsIntersect(bridge[i], otherBridge[0], intersectionPoints);
+		}
+	}
+}
+
+void findBridgeIntersections(int index, const std::vector<std::vector<Mesh::FaceHandle>>& bridges, std::vector<IntersectionPoint>& intersectionPoints) {
+	for (int i = index+1; i < bridges.size(); i++) {
+		findBridgeIntersections(bridges[index], bridges[i], intersectionPoints);
 	}
 }
 
 void generateBranchTopology(Mesh& mesh, std::shared_ptr<lsystem::OutputSegment> parent, geo::MeshContext& mc) {
+	std::vector<std::vector<Mesh::FaceHandle>> bridges;
 	for (const auto& child : parent->children) {
-		bridgeEdgeLoop(mesh,
+		bridges.push_back(bridgeEdgeLoop(mesh,
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
-					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]));
+					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2])));
+	}
+
+	std::vector<IntersectionPoint> intersectionPoints;
+	for (int i = 0; i < bridges.size(); i++) {
+		findBridgeIntersections(i, bridges, intersectionPoints);
 	}
 }
 
