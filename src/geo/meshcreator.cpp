@@ -4,19 +4,19 @@
 
 using namespace glm;
 
-void geo::instanceBezierCurves(Mesh& mesh, std::shared_ptr<lsystem::Output> lsystemOut) {
+void geo::MeshCreator::instance() {
 	MeshContext mc;
 	for (const auto& segmentPtr : lsystemOut->getSegments()) {
 		const lsystem::OutputSegment segment = *segmentPtr;
-		geo::instanceBezierCurve(mesh, segment, mc);
+		instanceSegment(segment, mc);
 	}
 }
 
-void geo::instanceBezierCurve(Mesh& mesh, const lsystem::OutputSegment& segment, MeshContext& mc) {
-	createCylinder(mesh, segment, 8, 4, mc);
+void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
+	createCylinder(segment, 8, 4, mc);
 }
 
-bool isLastChild(const lsystem::OutputSegment& child, geo::MeshContext& mc) {
+bool geo::MeshCreator::isLastChild(const lsystem::OutputSegment& child, MeshContext& mc) {
 	if (child.parent == nullptr) return false;
 	for (const auto& segment : child.parent->children) {
 		if (segment->id > child.id) return false;
@@ -24,7 +24,7 @@ bool isLastChild(const lsystem::OutputSegment& child, geo::MeshContext& mc) {
 	return true;
 }
 
-bool edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitPos) {
+bool geo::MeshCreator::edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitPos) {
 	auto pos = p1;
 	auto dir = p2 - p1;
 
@@ -64,19 +64,19 @@ bool edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitP
 	return true;
 }
 
-vec3 getVertexPos(Mesh& mesh, Mesh::VertexHandle v) {
+vec3 geo::MeshCreator::getVertexPos(Mesh::VertexHandle v) {
 	auto point = mesh.point(v);
 	return vec3(point[0], point[1], point[2]);
 }
 
-bool edgeIntersectsQuad(Mesh& mesh, const Mesh::VertexHandle v1, const Mesh::VertexHandle v2, const std::vector<Mesh::VertexHandle>& quad) {
+bool geo::MeshCreator::edgeIntersectsQuad(const Mesh::VertexHandle v1, const Mesh::VertexHandle v2, const std::vector<Mesh::VertexHandle>& quad) {
 	assert(quad.size() == 4);
 	vec3 hitPos;
-	auto p1 = getVertexPos(mesh, v1);
-	auto p2 = getVertexPos(mesh, v2);
+	auto p1 = getVertexPos(v1);
+	auto p2 = getVertexPos(v2);
 	vec3 quadPos[4];
 	for (int i = 0; i < 4; i++) {
-		quadPos[i] = getVertexPos(mesh, quad[i]);
+		quadPos[i] = getVertexPos(quad[i]);
 	}
 	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[1], quadPos[2], hitPos)) {
 		return true;
@@ -87,7 +87,7 @@ bool edgeIntersectsQuad(Mesh& mesh, const Mesh::VertexHandle v1, const Mesh::Ver
 	return false;
 }
 
-void generateQuad(Mesh& mesh, std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
+void geo::MeshCreator::generateQuad(std::vector<Mesh::VertexHandle>& dest, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
 	assert(loop1.size() == loop2.size());
 	// Copies vertices to avoid non-manifold vertex/edge errors (complex vertex / complex edge)
 	dest.push_back(loop1[quadIndex]);
@@ -101,7 +101,7 @@ void generateQuad(Mesh& mesh, std::vector<Mesh::VertexHandle>& dest, const std::
 	}
 }
 
-vec3 createOrthonormalVector(vec3 u1) {
+vec3 geo::MeshCreator::createOrthonormalVector(vec3 u1) {
 	vec3 offset; // used to offset u1 to create a linearly-independent vector
 	if (abs(u1.x) < 0.001 && abs(u1.y) < 0.001) {
 		offset = vec3(1, 0, 0);
@@ -115,7 +115,7 @@ vec3 createOrthonormalVector(vec3 u1) {
 	return normalize(u2);
 }
 
-mat3 createPlaneBasis(vec3 planeNormal) {
+mat3 geo::MeshCreator::createPlaneBasis(vec3 planeNormal) {
 	mat3 basis(1.0);
 
 	basis[0][0] = planeNormal.x;
@@ -135,7 +135,7 @@ mat3 createPlaneBasis(vec3 planeNormal) {
 	return basis;
 }
 
-vec2 projectPoint(Mesh::Point meshPoint, vec3 planeNormal, mat3 planeBasis) {
+vec2 geo::MeshCreator::projectPoint(Mesh::Point meshPoint, vec3 planeNormal, mat3 planeBasis) {
 	vec3 pt = vec3(meshPoint[0], meshPoint[1], meshPoint[2]);
 	vec3 projectedPoint = -dot(planeNormal, pt) * planeNormal + pt; 
 
@@ -154,7 +154,7 @@ vec2 projectPoint(Mesh::Point meshPoint, vec3 planeNormal, mat3 planeBasis) {
 		*/
 }
 
-std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHandle>& points, vec3 planeNormal, mat3 planeBasis) {
+std::vector<vec2> geo::MeshCreator::projectVertices(const std::vector<Mesh::VertexHandle>& points, vec3 planeNormal, mat3 planeBasis) {
 	std::vector<vec2> out;
 	vec2 center = vec2(0);
 	for (const auto p : points) {
@@ -169,7 +169,7 @@ std::vector<vec2> projectVertices(Mesh& mesh, const std::vector<Mesh::VertexHand
 	return out;
 }
 
-int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	assert(loop1.size() == loop2.size());
 
 	std::vector<vec3> loop1Points;
@@ -205,32 +205,26 @@ int getEdgeLoopBridgeOffset(Mesh& mesh, const std::vector<Mesh::VertexHandle>& l
 	return bestOffset;
 }
 
-std::vector<Mesh::FaceHandle> bridgeEdgeLoop(Mesh& mesh, const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+std::vector<Mesh::FaceHandle> geo::MeshCreator::bridgeEdgeLoop(const std::vector<Mesh::VertexHandle>& loop1, const std::vector<Mesh::VertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	assert(loop1.size() == loop2.size());
-	int offset = getEdgeLoopBridgeOffset(mesh, loop1, loop2, loop1Normal, loop2Normal);
+	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
 	std::cout << "Offset: " << offset << std::endl;
 	std::vector<Mesh::FaceHandle> bridgeFaces;
 	std::vector<Mesh::VertexHandle> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
-		generateQuad(mesh, quad, loop1, loop2, offset, j);
+		generateQuad(quad, loop1, loop2, offset, j);
 		bridgeFaces.push_back(mesh.add_face(quad));
 	}
 	return bridgeFaces;
 }
 
-struct IntersectionPoint {
-	vec3 pos;
-	Mesh::EdgeHandle edge;
-	Mesh::FaceHandle other;
-};
-
-void quadsIntersect(const Mesh::FaceHandle quad1, const Mesh::FaceHandle quad2, std::vector<IntersectionPoint>& intersectionPoints) {
+void geo::MeshCreator::quadsIntersect(const Mesh::FaceHandle quad1, const Mesh::FaceHandle quad2, std::vector<IntersectionPoint>& intersectionPoints) {
 	// TODO
 	
 }
 
-void findBridgeIntersections(const std::vector<Mesh::FaceHandle>& bridge, const std::vector<Mesh::FaceHandle>& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
+void geo::MeshCreator::findBridgeIntersections(const std::vector<Mesh::FaceHandle>& bridge, const std::vector<Mesh::FaceHandle>& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
 	for (int i = 0; i < bridge.size(); i++) {
 		for (int j = 0; j < otherBridge.size(); j++) {
 			quadsIntersect(bridge[i], otherBridge[0], intersectionPoints);
@@ -238,16 +232,16 @@ void findBridgeIntersections(const std::vector<Mesh::FaceHandle>& bridge, const 
 	}
 }
 
-void findBridgeIntersections(int index, const std::vector<std::vector<Mesh::FaceHandle>>& bridges, std::vector<IntersectionPoint>& intersectionPoints) {
+void geo::MeshCreator::findBridgeIntersections(int index, const std::vector<std::vector<Mesh::FaceHandle>>& bridges, std::vector<IntersectionPoint>& intersectionPoints) {
 	for (int i = index+1; i < bridges.size(); i++) {
 		findBridgeIntersections(bridges[index], bridges[i], intersectionPoints);
 	}
 }
 
-void generateBranchTopology(Mesh& mesh, std::shared_ptr<lsystem::OutputSegment> parent, geo::MeshContext& mc) {
+void geo::MeshCreator::generateBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
 	std::vector<std::vector<Mesh::FaceHandle>> bridges;
 	for (const auto& child : parent->children) {
-		bridges.push_back(bridgeEdgeLoop(mesh,
+		bridges.push_back(bridgeEdgeLoop(
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
@@ -260,18 +254,18 @@ void generateBranchTopology(Mesh& mesh, std::shared_ptr<lsystem::OutputSegment> 
 	}
 }
 
-void geo::createCylinder(Mesh& mesh, const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
+void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
 	std::vector<Mesh::VertexHandle> vertices;
 	if (segment.parent != nullptr && segment.parent->children.size() == 1) {
 		vertices = std::vector<Mesh::VertexHandle>(mc.getSegment(segment.parent->id).endVertices);
 	}
 	else {
-		createCircle(mesh, vertices, segment.mat, segment.translation, 0, pointCount);
+		createCircle(vertices, segment.mat, segment.translation, 0, pointCount);
 	}
 	auto startVertices = std::vector<Mesh::VertexHandle>(vertices);
 	for (int j = 0; j <= rings; j++) {
 		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
-		createCircle(mesh, vertices, segment.mat, segment.translation, interpFactor, pointCount);
+		createCircle(vertices, segment.mat, segment.translation, interpFactor, pointCount);
 		for (int i = 0; i < pointCount; i++) {
 			std::vector<Mesh::VertexHandle> faceVertices;
 			faceVertices.push_back(vertices[i]);
@@ -284,11 +278,11 @@ void geo::createCylinder(Mesh& mesh, const lsystem::OutputSegment& segment, int 
 	}
 	mc.setSegment(segment.id, Segment(startVertices, vertices));
 	if (isLastChild(segment, mc)) {
-		generateBranchTopology(mesh, segment.parent, mc);
+		generateBranchTopology(segment.parent, mc);
 	}
 }
 
-void geo::createCircle(Mesh& mesh, std::vector<Mesh::VertexHandle>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {
+void geo::MeshCreator::createCircle(std::vector<Mesh::VertexHandle>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {
 	for (int i = 0; i < pointCount; i++) {
 		vec3 circleOffset = vec3(interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
 		vec3 p = vec4(circleOffset, 1) * mat;

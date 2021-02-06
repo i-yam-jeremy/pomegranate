@@ -16,6 +16,7 @@ geo::Segment& geo::MeshContext::getSegment(int id) {
 
 Mesh geo::convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut) {
 	Mesh mesh;
-	geo::instanceBezierCurves(mesh, lsystemOut);
+	MeshCreator creator(mesh, lsystemOut);
+	creator.instance();
 	return mesh;
 }
