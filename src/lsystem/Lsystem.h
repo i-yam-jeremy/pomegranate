@@ -34,11 +34,17 @@ namespace lsystem {
 			@return The evaluated Lsystem structure.
 		*/
 		std::shared_ptr<Output> compile();
+		/*
+			Overrides the given number of generations with the new value provided.
+			@param generations The value to set the number of generations to.
+		*/
+		void overrideGenerations(float generations);
 	private:
 		/*
 			Applies a single generation of the Lsystem ruleset to the current state.
+			@param generationScale The length scale of this generation. Used for animating growth.
 		*/
-		void applySingleGeneration();
+		void applySingleGeneration(float generationScale = 1.0f);
 		/*
 			Evaluates all commands in the current state into an output structure for
 			instancing procedural geometry.
@@ -49,8 +55,10 @@ namespace lsystem {
 	private:
 		/*
 			The number of generations to apply when evaluating this Lsystem.
+			If the value is fractional, then ceil(generations) 
+			generations are applied and the last generation's length is scaled by fractional part
 		*/
-		int generations;
+		float generations;
 		/*
 			The base angle.
 		*/
@@ -69,6 +77,6 @@ namespace lsystem {
 		std::shared_ptr<Value> branchChanceCalculator = Value::createUniform(0, 1);
 	};
 
-	std::shared_ptr<Output> compile(std::string source);
+	std::shared_ptr<Output> compile(std::string source, float overridedGenerations=1, bool useOverridedGenerations=false);
 
 } // End namespace lsystem

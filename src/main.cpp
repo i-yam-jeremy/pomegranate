@@ -18,13 +18,13 @@ std::istream& operator>>(std::istream& stream, std::string& s) {
 }
 
 int main(int argc, char** argv) {
-	argc = 3;
+	/*argc = 3;
 	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
-	argv[2] = "--seed=11";
+	argv[2] = "--seed=11";*/
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {
-		std::cerr << "Usage: pomegranate [--basename=<base-path-to-output-files>] [--seed=<number>] input_file" << std::endl;
+		std::cerr << "Usage: pomegranate [--basename=<base-path-to-output-files>] [--seed=<number>] [--override-generations=<number>] input_file" << std::endl;
 		exit(1);
 	}
 	const auto& inputFile = args.positional()[0];
@@ -32,12 +32,16 @@ int main(int argc, char** argv) {
 	auto now = std::chrono::system_clock::now().time_since_epoch().count();
 	const auto seed = args.get<long>("seed", (long)now);
 	const auto& outputFile = args.get<std::string>("basename", inputFile.data());
+	const auto generations = args.get<float>("override-generations");
 
 	auto source = io::loadTextFile(inputFile.data());
 
 	Random::generator.seed(seed);
-	
-	auto out = lsystem::compile(source);
+
+	if (generations.has_value()) {
+		std::cout << "Generations: " << generations.value() << std::endl;
+	}
+	auto out = generations.has_value() ? lsystem::compile(source, generations.value(), true) : lsystem::compile(source);
 	auto mesh = geo::convertLsystemToGeo(out);
 
 	io::exportCSVRig(outputFile + "-rig.csv", out);

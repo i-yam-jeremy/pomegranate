@@ -62,20 +62,34 @@ namespace lsystem {
 }
 
 std::shared_ptr<Output> lsystem::Lsystem::compile() {
-	for (int i = 0; i < generations; i++) {
+	for (int i = 0; i < floor(generations); i++) {
 		applySingleGeneration();
+	}
+
+	float fractionalGeneration = fmod(generations, 1);
+	if (fractionalGeneration != 0.0f) {
+		applySingleGeneration(fractionalGeneration);
 	}
 
 	return eval();
 }
 
-void lsystem::Lsystem::applySingleGeneration() {
+void lsystem::Lsystem::overrideGenerations(float generations) {
+	this->generations = generations;
+}
+
+void lsystem::Lsystem::applySingleGeneration(float generationScale) {
 	std::vector<Command> newCommands;
 	for (auto& cmd : state) {
 		if (cmd.type == CommandType::ID) {
 			bool foundMatchingRule = false;
 			for (auto& rule : rules) {
 				if (rule.name == cmd.value) {
+					if (generationScale != 1.0f) {
+						auto newCmd = Command("", CommandType::SCALE_LENGTH);
+						newCmd.dataValue = Value::createConstant(generationScale);
+						newCommands.push_back(newCmd);
+					}
 					newCommands.insert(newCommands.end(), rule.commands.begin(), rule.commands.end());
 					foundMatchingRule = true;
 					break;
@@ -167,7 +181,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 	return out;
 }
 
-std::shared_ptr<lsystem::Output> lsystem::compile(std::string source) {
+std::shared_ptr<lsystem::Output> lsystem::compile(std::string source, float overridedGenerations, bool useGenerationsOverride) {
 	std::istringstream stream;
 	stream.str(source);
 
@@ -180,5 +194,8 @@ std::shared_ptr<lsystem::Output> lsystem::compile(std::string source) {
 
 	lsystem::LsystemLoaderVisitor visitor;
 	std::shared_ptr<lsystem::Lsystem> lsys = visitor.visitLsystem(tree);
+	if (useGenerationsOverride) {
+		lsys->overrideGenerations(overridedGenerations);
+	}
 	return lsys->compile();
 }
