@@ -1,6 +1,6 @@
 #include "geo.h"
 
-#include "bezier.h"
+#include "meshcreator.h"
 
 void geo::MeshContext::setSegment(int id, Segment segment) {
 	segments[id] = segment;

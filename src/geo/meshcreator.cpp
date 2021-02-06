@@ -1,4 +1,4 @@
-#include "bezier.h"
+#include "meshcreator.h"
 
 #include <math.h>
 
@@ -227,6 +227,7 @@ struct IntersectionPoint {
 
 void quadsIntersect(const Mesh::FaceHandle quad1, const Mesh::FaceHandle quad2, std::vector<IntersectionPoint>& intersectionPoints) {
 	// TODO
+	
 }
 
 void findBridgeIntersections(const std::vector<Mesh::FaceHandle>& bridge, const std::vector<Mesh::FaceHandle>& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
