@@ -4,6 +4,9 @@
 
 using namespace glm;
 
+#include <fstream>
+std::ofstream foutIntersections("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
+
 void geo::MeshCreator::instance() {
 	MeshContext mc;
 	for (const auto& segmentPtr : lsystemOut->getSegments()) {
@@ -24,7 +27,7 @@ bool geo::MeshCreator::isLastChild(const lsystem::OutputSegment& child, MeshCont
 	return true;
 }
 
-bool geo::MeshCreator::edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitPos) {
+bool geo::MeshCreator::edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitPos, float& t) {
 	auto pos = p1;
 	auto dir = p2 - p1;
 
@@ -51,8 +54,8 @@ bool geo::MeshCreator::edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, 
 	float M = a * (tmp4)-b * (tmp2)+c * (tmp1);
 
 	float detT = a * (-tmp5) - b * (tmp3)+j * (tmp1);
-	float t = detT / M;
-	if (t < 0 || t > 1) return false;
+	t = detT / M;
+	if (t <= 0 || t >= 0.9999) return false;
 	float detGamma = a * (tmp6)-j * (tmp2)+c * (tmp3);
 	float gamma = detGamma / M;
 	if (gamma < 0 || gamma > 1) return false;
@@ -69,22 +72,24 @@ vec3 geo::MeshCreator::getVertexPos(OpenMesh::SmartVertexHandle v) {
 	return vec3(point[0], point[1], point[2]);
 }
 
-bool geo::MeshCreator::edgeIntersectsQuad(const OpenMesh::SmartVertexHandle v1, const OpenMesh::SmartVertexHandle v2, const std::vector<OpenMesh::SmartVertexHandle>& quad) {
-	assert(quad.size() == 4);
+void geo::MeshCreator::edgeIntersectsQuad(const OpenMesh::SmartEdgeHandle edge, const OpenMesh::SmartFaceHandle quad, std::vector<IntersectionPoint>& intersectionPoints) {
+	assert(quad.vertices().count_if([](OpenMesh::SmartVertexHandle a) { return true;  }) == 4);
+	float t;
 	vec3 hitPos;
-	auto p1 = getVertexPos(v1);
-	auto p2 = getVertexPos(v2);
-	vec3 quadPos[4];
-	for (int i = 0; i < 4; i++) {
-		quadPos[i] = getVertexPos(quad[i]);
+	auto p1 = getVertexPos(edge.v0());
+	auto p2 = getVertexPos(edge.v1());
+	std::vector<vec3> quadPos;
+	for (const auto& v : quad.vertices()) {
+		quadPos.push_back(getVertexPos(v));
 	}
-	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[1], quadPos[2], hitPos)) {
-		return true;
+	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[1], quadPos[2], hitPos, t)) {
+		IntersectionPoint p = { hitPos, t, edge, quad };
+		intersectionPoints.push_back(p);
 	}
-	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[2], quadPos[3], hitPos)) {
-		return true;
+	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[2], quadPos[3], hitPos, t)) {
+		IntersectionPoint p = { hitPos, t, edge, quad };
+		intersectionPoints.push_back(p);
 	}
-	return false;
 }
 
 void geo::MeshCreator::generateQuad(std::vector<OpenMesh::SmartVertexHandle>& dest, const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
@@ -99,74 +104,6 @@ void geo::MeshCreator::generateQuad(std::vector<OpenMesh::SmartVertexHandle>& de
 		auto p = mesh.point(dest[i]);
 		dest[i] = mesh.add_vertex(p);
 	}
-}
-
-vec3 geo::MeshCreator::createOrthonormalVector(vec3 u1) {
-	vec3 offset; // used to offset u1 to create a linearly-independent vector
-	if (abs(u1.x) < 0.001 && abs(u1.y) < 0.001) {
-		offset = vec3(1, 0, 0);
-	}
-	else {
-		offset = vec3(0, 0, 1);
-	}
-	vec3 v2 = u1 + offset;
-	vec3 proj = (dot(u1, v2) / dot(u1, u1)) * u1; // project v2 onto u1
-	vec3 u2 = v2 - proj;
-	return normalize(u2);
-}
-
-mat3 geo::MeshCreator::createPlaneBasis(vec3 planeNormal) {
-	mat3 basis(1.0);
-
-	basis[0][0] = planeNormal.x;
-	basis[0][1] = planeNormal.y;
-	basis[0][2] = planeNormal.z;
-
-	vec3 v2 = createOrthonormalVector(planeNormal);
-	basis[1][0] = v2.x;
-	basis[1][1] = v2.y;
-	basis[1][2] = v2.z;
-
-	vec3 v3 = cross(planeNormal, v2);
-	basis[2][0] = v3.x;
-	basis[2][1] = v3.y;
-	basis[2][2] = v3.z;
-
-	return basis;
-}
-
-vec2 geo::MeshCreator::projectPoint(Mesh::Point meshPoint, vec3 planeNormal, mat3 planeBasis) {
-	vec3 pt = vec3(meshPoint[0], meshPoint[1], meshPoint[2]);
-	vec3 projectedPoint = -dot(planeNormal, pt) * planeNormal + pt; 
-
-	vec3 projectedPointInPlaneSpace = inverse(planeBasis) * projectedPoint;
-	vec3 a = projectedPointInPlaneSpace;
-	assert(abs(projectedPointInPlaneSpace.x) < 0.001);
-	return vec2(projectedPointInPlaneSpace.y, projectedPointInPlaneSpace.z);
-	/*
-		dot(N, t*N + pt) = 0
-		N.x*(t*N.x + pt.x) + N.y*(t*N.y + pt.y) + N.z*(t*N.z + pt.z) = 0
-		t*(N.x*N.x + N.y*N.y + N.z*N.z) + dot(N, pt) = 0
-		||N|| = 1, so
-		t = -dot(N, pt)
-		therefore,
-		p = -dot(N, pt)*N + pt
-		*/
-}
-
-std::vector<vec2> geo::MeshCreator::projectVertices(const std::vector<OpenMesh::SmartVertexHandle>& points, vec3 planeNormal, mat3 planeBasis) {
-	std::vector<vec2> out;
-	vec2 center = vec2(0);
-	for (const auto p : points) {
-		auto projected = projectPoint(mesh.point(p), planeNormal, planeBasis);
-		out.push_back(projected);
-		center += projected;
-	}
-	center /= points.size();
-	for (int i = 0; i < out.size(); i++) {
-		out[i] -= center;
-	}
-	return out;
 }
 
 int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
@@ -205,53 +142,56 @@ int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<OpenMesh::SmartV
 	return bestOffset;
 }
 
-std::vector<OpenMesh::SmartFaceHandle> geo::MeshCreator::bridgeEdgeLoop(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+void geo::MeshCreator::bridgeEdgeLoop(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
-	std::cout << "Offset: " << offset << std::endl;
-	std::vector<OpenMesh::SmartFaceHandle> bridgeFaces;
 	std::vector<OpenMesh::SmartVertexHandle> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
 		generateQuad(quad, loop1, loop2, offset, j);
-		bridgeFaces.push_back(mesh.add_face(quad));
+		const auto face = mesh.add_face(quad);
+		const auto edges = face.edges().to_vector();
+		bridge.mainEdges.push_back(edges[0]);
+		bridge.mainEdges.push_back(edges[2]);
+		bridge.quads.push_back(face);
 	}
-	return bridgeFaces;
 }
 
-void geo::MeshCreator::quadsIntersect(const OpenMesh::SmartFaceHandle quad1, const OpenMesh::SmartFaceHandle quad2, std::vector<IntersectionPoint>& intersectionPoints) {
-	// TODO
-	quad1.edges();
-	
-}
-
-void geo::MeshCreator::findBridgeIntersections(const std::vector<OpenMesh::SmartFaceHandle>& bridge, const std::vector<OpenMesh::SmartFaceHandle>& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
-	for (int i = 0; i < bridge.size(); i++) {
-		for (int j = 0; j < otherBridge.size(); j++) {
-			quadsIntersect(bridge[i], otherBridge[0], intersectionPoints);
+void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridge& otherBridge, std::vector<IntersectionPoint>& intersectionPoints) {
+	for (const auto& edge : bridge.mainEdges) {
+		for (const auto& quad : otherBridge.quads) {
+			edgeIntersectsQuad(edge, quad, intersectionPoints);
+		}
+	}
+	for (const auto& edge : otherBridge.mainEdges) {
+		for (const auto& quad : bridge.quads) {
+			edgeIntersectsQuad(edge, quad, intersectionPoints);
 		}
 	}
 }
 
-void geo::MeshCreator::findBridgeIntersections(int index, const std::vector<std::vector<OpenMesh::SmartFaceHandle>>& bridges, std::vector<IntersectionPoint>& intersectionPoints) {
-	for (int i = index+1; i < bridges.size(); i++) {
-		findBridgeIntersections(bridges[index], bridges[i], intersectionPoints);
-	}
-}
-
 void geo::MeshCreator::generateBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
-	std::vector<std::vector<OpenMesh::SmartFaceHandle>> bridges;
+	std::vector<Bridge> bridges;
 	for (const auto& child : parent->children) {
-		bridges.push_back(bridgeEdgeLoop(
+		Bridge bridge;
+		bridgeEdgeLoop(
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
-					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2])));
+					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]),
+			bridge);
+		bridges.push_back(bridge);
 	}
 
 	std::vector<IntersectionPoint> intersectionPoints;
 	for (int i = 0; i < bridges.size(); i++) {
-		findBridgeIntersections(i, bridges, intersectionPoints);
+		for (int j = i + 1; j < bridges.size(); j++) {
+			findBridgeIntersections(bridges[i], bridges[j], intersectionPoints);
+		}
+	}
+	std::cout << "Intersection Points: " << intersectionPoints.size() << std::endl;
+	for (const auto& p : intersectionPoints) {
+		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
 	}
 }
 

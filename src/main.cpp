@@ -18,7 +18,7 @@ std::istream& operator>>(std::istream& stream, std::string& s) {
 }
 
 int main(int argc, char** argv) {
-	argc = 2;
+	argc = 3;
 	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
 	argv[2] = "--seed=11";
 
