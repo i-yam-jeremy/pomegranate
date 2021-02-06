@@ -21,17 +21,17 @@ namespace geo {
 			@param startVertices The starting edge loop of vertices.
 			@param endVertices The ending edge loop of vertices.
 		*/
-		Segment(std::vector<Mesh::VertexHandle> startVertices, std::vector<Mesh::VertexHandle> endVertices) :
+		Segment(std::vector<OpenMesh::SmartVertexHandle> startVertices, std::vector<OpenMesh::SmartVertexHandle> endVertices) :
 			startVertices(startVertices),
 			endVertices(endVertices) {};
 		/*
 			The starting edge loop of vertices.
 		*/
-		std::vector<Mesh::VertexHandle> startVertices;
+		std::vector<OpenMesh::SmartVertexHandle> startVertices;
 		/*
 			The ending edge loop of vertices.
 		*/
-		std::vector<Mesh::VertexHandle> endVertices;
+		std::vector<OpenMesh::SmartVertexHandle> endVertices;
 	};
 
 	/*
