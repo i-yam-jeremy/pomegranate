@@ -1,24 +1,23 @@
 #pragma once
 
 #include <random>
-#include <sstream>
-#include <memory>
+#include <unordered_map>
 
 class Random {
 public:
 	static void seed(long seed);
-	static void pushState();
-	static void popState();
+	static void saveState(int generation);
+	static void restoreState(int generation);
 	static float evalNormal(float mean, float stddev);
 	static float evalUniform(float min, float max);
 
 private:
 	struct RNGState {
-		std::stringstream generator;
-		std::stringstream normalDist;
-		std::stringstream uniformDist;
+		std::default_random_engine generator;
+		std::normal_distribution<float> normalDist;
+		std::uniform_real_distribution<float> uniformDist;
 	};
-	static std::vector<std::shared_ptr<RNGState>> stateStack;
+	static std::unordered_map<int, RNGState> stateMap;
 	static std::default_random_engine generator;
 	static std::normal_distribution<float> normalDist;
 	static std::uniform_real_distribution<float> uniformDist;

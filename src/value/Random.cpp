@@ -1,8 +1,6 @@
 #include "Random.h"
 
-#include <sstream>
-
-std::vector<std::shared_ptr<Random::RNGState>> Random::stateStack;
+std::unordered_map<int, Random::RNGState> Random::stateMap;
 std::default_random_engine Random::generator = std::default_random_engine();
 std::normal_distribution<float> Random::normalDist(0, 1);
 std::uniform_real_distribution<float> Random::uniformDist(0, 1);
@@ -12,23 +10,21 @@ void Random::seed(long seed) {
 }
 
 #include <iostream>
-void Random::pushState() {
+void Random::saveState(int generation) {
 	std::cout << "PUSH" << std::endl;
-	auto state = std::make_shared<RNGState>();
-	std::stringstream s;
-	state->generator << generator;
-	state->normalDist << normalDist;
-	state->uniformDist << uniformDist;
-	stateStack.push_back(state);
+	RNGState state;
+	state.generator = generator;
+	state.normalDist = normalDist;
+	state.uniformDist = uniformDist;
+	stateMap[generation] = state;
 }
 
-void Random::popState() {
+void Random::restoreState(int generation) {
 	std::cout << "POP" << std::endl;
-	auto state = stateStack.back();
-	stateStack.pop_back();
-	state->generator >> generator;
-	state->normalDist >> normalDist;
-	state->uniformDist >> uniformDist;
+	auto state = stateMap[generation];
+	state.generator = generator;
+	state.normalDist = normalDist;
+	state.uniformDist = uniformDist;
 }
 
 float Random::evalNormal(float mean, float stddev) {
