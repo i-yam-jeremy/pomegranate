@@ -21,30 +21,30 @@ private:
 
 class UniformRNG : public RNG {
 public:
-	UniformRNG(float min, float max) {
-		dist = std::uniform_real_distribution<float>(min, max);
-	}
+	UniformRNG(float min, float max) :
+		min(min),
+		max(max) {};
 
 	float sample() {
-		return dist(Random::generator);
+		return Random::evalUniform(min, max);
 	}
 
 private:
-	std::uniform_real_distribution<float> dist;
+	float min, max;
 };
 
 class NormalRNG : public RNG {
 public:
-	NormalRNG(float mean, float stddev) {
-		dist = std::normal_distribution<float>(mean, stddev);
-	}
+	NormalRNG(float mean, float stddev) :
+		mean(mean),
+		stddev(stddev) {};
 
 	float sample() {
-		return dist(Random::generator);
+		return Random::evalNormal(mean, stddev);
 	}
 
 private:
-	std::normal_distribution<float> dist;
+	float mean, stddev;
 };
 
 std::shared_ptr<Value> Value::createConstant(float c) {

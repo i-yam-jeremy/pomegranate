@@ -42,9 +42,10 @@ namespace lsystem {
 	private:
 		/*
 			Applies a single generation of the Lsystem ruleset to the current state.
+			@param generation The index of the generation to create. Used for tagging commands.
 			@param generationScale The length scale of this generation. Used for animating growth.
 		*/
-		void applySingleGeneration(float generationScale = 1.0f);
+		void applySingleGeneration(int generation, float generationScale = 1.0f);
 		/*
 			Evaluates all commands in the current state into an output structure for
 			instancing procedural geometry.

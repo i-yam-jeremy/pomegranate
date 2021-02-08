@@ -10,6 +10,7 @@
 #include "LsystemLexer.h"
 #include "LsystemParser.h"
 #include "parser/LsystemLoaderVisitor.h"
+#include "../value/Random.h"
 
 using namespace antlr4;
 using namespace lsystem;
@@ -18,7 +19,8 @@ using namespace glm;
 namespace lsystem {
 	class EvalState {
 	public:
-		EvalState(std::shared_ptr<Value> angle):
+		EvalState() {}
+		EvalState(std::shared_ptr<Value> angle) :
 			mat(identity<mat4>()),
 			angleChange(angle) {}
 
@@ -39,7 +41,7 @@ namespace lsystem {
 		}
 
 		void goForward() {
-			vec3 translateVec = vec4(1*length, 0, 0, 0) * mat;
+			vec3 translateVec = vec4(1 * length, 0, 0, 0) * mat;
 			translation += translateVec;
 		}
 
@@ -63,12 +65,12 @@ namespace lsystem {
 
 std::shared_ptr<Output> lsystem::Lsystem::compile() {
 	for (int i = 0; i < floor(generations); i++) {
-		applySingleGeneration();
+		applySingleGeneration(i);
 	}
 
 	float fractionalGeneration = fmod(generations, 1);
 	if (fractionalGeneration != 0.0f) {
-		applySingleGeneration(fractionalGeneration);
+		applySingleGeneration(floor(generations), fractionalGeneration);
 	}
 
 	return eval();
@@ -78,7 +80,7 @@ void lsystem::Lsystem::overrideGenerations(float generations) {
 	this->generations = generations;
 }
 
-void lsystem::Lsystem::applySingleGeneration(float generationScale) {
+void lsystem::Lsystem::applySingleGeneration(int generation, float generationScale) {
 	std::vector<Command> newCommands;
 	for (auto& cmd : state) {
 		if (cmd.type == CommandType::ID) {
@@ -88,9 +90,13 @@ void lsystem::Lsystem::applySingleGeneration(float generationScale) {
 					if (generationScale != 1.0f) {
 						auto newCmd = Command("", CommandType::SCALE_LENGTH);
 						newCmd.dataValue = Value::createConstant(generationScale);
+						newCmd.generation = generation;
 						newCommands.push_back(newCmd);
 					}
-					newCommands.insert(newCommands.end(), rule.commands.begin(), rule.commands.end());
+					for (auto cmd : rule.commands) {
+						cmd.generation = generation;
+						newCommands.push_back(cmd);
+					}
 					foundMatchingRule = true;
 					break;
 				}
@@ -113,7 +119,23 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	EvalState currentState(angle);
 
-	for (auto& cmd : state) {
+	if (state.size() > 0) { // push states for each generation (states won't always be used, but prevents stack underflow)
+		for (int i = 0; i < state[0].generation; i++) {
+			Random::pushState();
+		}
+	}
+
+	for (int i = 0; i < state.size(); i++) {
+		const auto& cmd = state[i];
+		if (i > 0) {
+			const auto& previousCmd = state[i - 1];
+			if (previousCmd.generation < cmd.generation) {
+				Random::pushState();
+			}
+			else if (previousCmd.generation > cmd.generation) {
+				Random::popState();
+			}
+		}
 		auto& angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD: {
@@ -172,7 +194,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 				std::cerr << "Error: Attempting to pop but nothing on Lsystem eval stack" << std::endl;
 				exit(1);
 			}
- 			currentState = stack.back();
+			currentState = stack.back();
 			stack.pop_back();
 			break;
 		}

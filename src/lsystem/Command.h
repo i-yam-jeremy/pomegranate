@@ -61,5 +61,9 @@ namespace lsystem {
 			The first float argument to this command.
 		*/
 		std::shared_ptr<Value> dataValue = nullptr;
+		/*
+			The generation this command was created on.
+		*/
+		int generation = -1;
 	};
 }

@@ -18,9 +18,11 @@ std::istream& operator>>(std::istream& stream, std::string& s) {
 }
 
 int main(int argc, char** argv) {
-	/*argc = 3;
+	/*argc = 4;
 	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
-	argv[2] = "--seed=11";*/
+	argv[2] = "--seed=0";
+	argv[3] = "--override-generations=2.5";*/
+	std::cout << "HELLO WORLD" << std::endl;
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {
@@ -36,7 +38,7 @@ int main(int argc, char** argv) {
 
 	auto source = io::loadTextFile(inputFile.data());
 
-	Random::generator.seed(seed);
+	Random::seed(seed);
 
 	if (generations.has_value()) {
 		std::cout << "Generations: " << generations.value() << std::endl;
