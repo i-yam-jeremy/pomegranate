@@ -1,37 +1,37 @@
 #include "Random.h"
 
-std::unordered_map<int, Random::RNGState> Random::stateMap;
+std::unordered_map<int, unsigned long> Random::stateMap;
+long Random::baseSeed = 0L;
+int Random::activeGeneration = 0;
 std::default_random_engine Random::generator = std::default_random_engine();
 std::normal_distribution<float> Random::normalDist(0, 1);
 std::uniform_real_distribution<float> Random::uniformDist(0, 1);
 
 void Random::seed(long seed) {
-	generator.seed(seed);
+	baseSeed = seed;
 }
 
-#include <iostream>
-void Random::saveState(int generation) {
-	std::cout << "PUSH" << std::endl;
-	RNGState state;
-	state.generator = generator;
-	state.normalDist = normalDist;
-	state.uniformDist = uniformDist;
-	stateMap[generation] = state;
+void Random::setActiveGeneration(int generation) {
+	activeGeneration = generation;
 }
 
-void Random::restoreState(int generation) {
-	std::cout << "POP" << std::endl;
-	auto state = stateMap[generation];
-	state.generator = generator;
-	state.normalDist = normalDist;
-	state.uniformDist = uniformDist;
+long Random::getCurrentIndex() {
+	const auto data = stateMap.find(activeGeneration);
+	if (data == stateMap.end()) {
+		stateMap[activeGeneration] = 0;
+	}
+	return (data == stateMap.end()) ? 0 : data->second;
 }
 
 float Random::evalNormal(float mean, float stddev) {
+	normalDist.reset();
+	generator.seed(baseSeed + 40000L * activeGeneration + getCurrentIndex());
 	return normalDist(generator)*stddev + mean;
 }
 
 float Random::evalUniform(float min, float max) {
+	uniformDist.reset();
+	generator.seed(baseSeed + 40000L * activeGeneration + getCurrentIndex());
 	return uniformDist(generator)*(max-min) + min;
 }
 

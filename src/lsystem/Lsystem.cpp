@@ -119,22 +119,9 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 
 	EvalState currentState(angle);
 
-	if (state.size() > 0) { // push states for each generation (states won't always be used, but prevents stack underflow)
-		for (int i = 0; i < state[0].generation; i++) {
-			Random::saveState(i);
-		}
-	}
-
 	for (int i = 0; i < state.size(); i++) {
 		const auto& cmd = state[i];
-		if (i > 0) {
-			const auto& previousCmd = state[i - 1];
-			if (previousCmd.generation != cmd.generation) {
-				/*Random::saveState(previousCmd.generation);
-				Random::restoreState(cmd.generation);*/
-				// TODO use queue of random values, and use separate queue for each generation
-			}
-		}
+		Random::setActiveGeneration(cmd.generation);
 		auto& angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
 		case FORWARD: {
