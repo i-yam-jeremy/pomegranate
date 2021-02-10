@@ -83,11 +83,23 @@ void geo::MeshCreator::edgeIntersectsQuad(const OpenMesh::SmartEdgeHandle edge, 
 		quadPos.push_back(getVertexPos(v));
 	}
 	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[1], quadPos[2], hitPos, t)) {
-		IntersectionPoint p = { hitPos, t, edge, quad };
+		const auto v = editableBranchFacesByIndex.find(quad.idx());
+		if (v == editableBranchFacesByIndex.end()) {
+			editableBranchFacesByIndex[quad.idx()] = editableBranchFaces.size();
+			editableBranchFaces[editableBranchFaces.size()] = quad;
+		}
+		const EditableFaceHandle f = (v == editableBranchFacesByIndex.end()) ? editableBranchFaces.size() - 1 : v->second;
+		IntersectionPoint p = { hitPos, t, edge, f };
 		intersectionPoints.push_back(p);
 	}
 	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[2], quadPos[3], hitPos, t)) {
-		IntersectionPoint p = { hitPos, t, edge, quad };
+		const auto v = editableBranchFacesByIndex.find(quad.idx());
+		if (v == editableBranchFacesByIndex.end()) {
+			editableBranchFacesByIndex[quad.idx()] = editableBranchFaces.size();
+			editableBranchFaces[editableBranchFaces.size()] = quad;
+		}
+		const EditableFaceHandle f = (v == editableBranchFacesByIndex.end()) ? editableBranchFaces.size() - 1 : v->second;
+		IntersectionPoint p = { hitPos, t, edge, f };
 		intersectionPoints.push_back(p);
 	}
 }
@@ -170,7 +182,37 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 	}
 }
 
-void geo::MeshCreator::generateBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
+void geo::MeshCreator::splitHalfEdge(OpenMesh::SmartHalfedgeHandle target, OpenMesh::SmartVertexHandle newVertex) {
+	const auto face = editableBranchFacesByIndex[target.face().idx()];
+	editableBranchFacesByIndex.erase(target.face().idx());
+	
+	std::vector<OpenMesh::SmartVertexHandle> newFaceVertices;
+	for (const auto he : target.face().halfedges()) {
+		newFaceVertices.push_back(he.from());
+		if (he.idx() == target.idx()) {
+			newFaceVertices.push_back(newVertex);
+		}
+	}
+
+	std::cout << "Hello" << std::endl;
+
+	//mesh.delete_face(target.face());
+	const auto newFace = mesh.add_face(newFaceVertices);
+	editableBranchFaces[face] = newFace;
+	editableBranchFacesByIndex[newFace.idx()] = face;
+	std::cout << target.face().idx() << " -> " << newFace.idx() << std::endl;
+}
+
+void geo::MeshCreator::createManifoldBranchHull(const std::vector<IntersectionPoint> intersections) {
+	for (const auto& p : intersections) {
+		const auto v = mesh.add_vertex(Mesh::Point(p.pos.x, p.pos.y, p.pos.z));
+		splitHalfEdge(p.edge.h0(), v);
+		splitHalfEdge(p.edge.h1(), v);
+		// TODO update other face references (because faces have been deleted and replaced)
+	}
+}
+
+void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
 	std::vector<Bridge> bridges;
 	for (const auto& child : parent->children) {
 		Bridge bridge;
@@ -183,16 +225,17 @@ void geo::MeshCreator::generateBranchTopology(std::shared_ptr<lsystem::OutputSeg
 		bridges.push_back(bridge);
 	}
 
+	editableBranchFaces.clear();
+	editableBranchFacesByIndex.clear();
+
 	std::vector<IntersectionPoint> intersectionPoints;
 	for (int i = 0; i < bridges.size(); i++) {
 		for (int j = i + 1; j < bridges.size(); j++) {
 			findBridgeIntersections(bridges[i], bridges[j], intersectionPoints);
 		}
 	}
-	std::cout << "Intersection Points: " << intersectionPoints.size() << std::endl;
-	for (const auto& p : intersectionPoints) {
-		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
-	}
+	
+	createManifoldBranchHull(intersectionPoints);
 }
 
 void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
@@ -219,7 +262,7 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	}
 	mc.setSegment(segment.id, Segment(startVertices, vertices));
 	if (isLastChild(segment, mc)) {
-		generateBranchTopology(segment.parent, mc);
+		createBranchTopology(segment.parent, mc);
 	}
 }
 

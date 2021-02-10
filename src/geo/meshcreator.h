@@ -13,16 +13,18 @@ namespace geo {
 			lsystemOut(lsystemOut) {};
 		void instance();
 	private:
+		typedef int EditableFaceHandle;
 		struct IntersectionPoint {
 			vec3 pos;
 			float t;
 			OpenMesh::SmartEdgeHandle edge;
-			OpenMesh::SmartFaceHandle other;
+			EditableFaceHandle other;
 		};
 		struct Bridge {
 			std::vector<OpenMesh::SmartFaceHandle> quads;
 			std::vector<OpenMesh::SmartEdgeHandle> mainEdges; // the edges connecting the loops, not the edges of an individual loop
 		};
+
 		void instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc);
 		bool isLastChild(const lsystem::OutputSegment& child, MeshContext& mc);
 		bool edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, vec3 C, vec3& hitPos, float& t);
@@ -32,11 +34,18 @@ namespace geo {
 		int getEdgeLoopBridgeOffset(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal);
 		void bridgeEdgeLoop(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge);
 		void findBridgeIntersections(const Bridge& bridge, const Bridge& otherBridge, std::vector<IntersectionPoint>& intersectionPoints);
-		void generateBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
+		
+		void splitHalfEdge(OpenMesh::SmartHalfedgeHandle target, OpenMesh::SmartVertexHandle newVertex);
+		void createManifoldBranchHull(const std::vector<IntersectionPoint> intersections);
+		
+		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
 		void createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc);
 		void createCircle(std::vector<OpenMesh::SmartVertexHandle>& vertices, glm::mat4 mat, glm::vec3 translation, float interpFactor, int pointCount);
 
 		Mesh& mesh;
 		std::shared_ptr<lsystem::Output> lsystemOut;
+
+		std::unordered_map<int, EditableFaceHandle> editableBranchFacesByIndex;
+		std::unordered_map<EditableFaceHandle, OpenMesh::SmartFaceHandle> editableBranchFaces;
 	};
 };

@@ -18,10 +18,10 @@ std::istream& operator>>(std::istream& stream, std::string& s) {
 }
 
 int main(int argc, char** argv) {
-	/*argc = 4;
+	argc = 4;
 	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
 	argv[2] = "--seed=0";
-	argv[3] = "--override-generations=2.5";*/
+	argv[3] = "--override-generations=2.5";
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {
