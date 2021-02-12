@@ -1,7 +1,5 @@
 #include "io.h"
 
-#include <OpenMesh/Core/IO/MeshIO.hh>
-
 #include <fstream>
 #include <streambuf>
 
@@ -18,10 +16,9 @@ void io::exportCSVRig(std::string path, std::shared_ptr<lsystem::Output> out) {
 	fout.close();
 }
 
-void io::exportMesh(std::string path, Mesh& mesh) {
-	if (!OpenMesh::IO::write_mesh(mesh, path)) {
-		std::cerr << "Error writing mesh to " << path << std::endl;
-	}
+void io::exportMesh(std::string path, meshlib::Mesh& mesh) {
+	std::ofstream fout(path);
+	mesh.toOBJ(fout);
 }
 
 std::string io::loadTextFile(std::string path) {

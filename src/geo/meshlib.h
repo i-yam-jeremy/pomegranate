@@ -4,6 +4,7 @@
 #include <vector>
 #include <glm/vec3.hpp>
 #include <ostream>
+#include <utility>
 
 using namespace glm;
 
@@ -11,6 +12,7 @@ namespace meshlib {
 	typedef size_t Handle;
 
 	class Vertex;
+	class Edge;
 	class Face;
 
 	class Mesh {
@@ -19,19 +21,23 @@ namespace meshlib {
 		Vertex addVertex(vec3 p);
 		Face addFace(std::vector<Vertex>& verts);
 
-		std::vector<Vertex> getFaceVertices(Face& f);
+		vec3 getVertexPosition(const Vertex& v);
+		void updateVertexPosition(Vertex& v, vec3 pos);
+
+		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 
 		void toOBJ(std::ostream& out);
 
-		Handle getHandle(Vertex& v);
-		Handle getHandle(Face& f);
+		Handle getHandle(const Vertex& v);
+		Handle getHandle(const Face& f);
 	private:
 		Handle getNextHandle();
 
 		Handle currentHandle = 0;
 		struct VertexData {
 			vec3 position;
+			std::vector<Handle> faces;
 		};
 		struct FaceData {
 			std::vector<Handle> vertices;
@@ -42,28 +48,45 @@ namespace meshlib {
 
 	class Vertex {
 	public:
-		Vertex(Mesh& mesh, Handle handle) :
+		Vertex(Mesh* mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
-
-		friend Handle Mesh::getHandle(Vertex& v);
+		vec3 pos() const;
+		void pos(vec3 p);
+		friend Handle Mesh::getHandle(const Vertex& v);
 	private:
-		Mesh& mesh;
+		Mesh* mesh;
 		Handle handle;
+	};
+
+	class Edge {
+	public:
+		Edge(Mesh* mesh, Vertex v0, Vertex v1) :
+			m_mesh(mesh),
+			m_v0(v0),
+			m_v1(v1) {};
+		Vertex v0() const;
+		Vertex v1() const;
+		void split(float t);
+	private:
+		Mesh* m_mesh;
+		Vertex m_v0, m_v1;
 	};
 
 	class Face {
 	public:
-		Face(Mesh& mesh, Handle handle) :
+		Face(Mesh* mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
 
-		std::vector<Vertex> vertices();
+		std::vector<Vertex> vertices() const;
+		std::vector<Edge> edges() const;
+
 		void update(std::vector<Vertex>& verts);
 
-		friend Handle Mesh::getHandle(Face& v);
+		friend Handle Mesh::getHandle(const Face& v);
 	private:
-		Mesh& mesh;
+		Mesh* mesh;
 		Handle handle;
 	};
 }

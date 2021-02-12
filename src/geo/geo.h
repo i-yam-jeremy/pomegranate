@@ -1,10 +1,8 @@
 #pragma once
 
 #include <unordered_map>
-#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+#include "meshlib.h"
 #include "../lsystem/Lsystem.h"
-
-typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
 
 namespace geo {
 	/*
@@ -21,17 +19,17 @@ namespace geo {
 			@param startVertices The starting edge loop of vertices.
 			@param endVertices The ending edge loop of vertices.
 		*/
-		Segment(std::vector<OpenMesh::SmartVertexHandle> startVertices, std::vector<OpenMesh::SmartVertexHandle> endVertices) :
+		Segment(std::vector<meshlib::Vertex> startVertices, std::vector<meshlib::Vertex> endVertices) :
 			startVertices(startVertices),
 			endVertices(endVertices) {};
 		/*
 			The starting edge loop of vertices.
 		*/
-		std::vector<OpenMesh::SmartVertexHandle> startVertices;
+		std::vector<meshlib::Vertex> startVertices;
 		/*
 			The ending edge loop of vertices.
 		*/
-		std::vector<OpenMesh::SmartVertexHandle> endVertices;
+		std::vector<meshlib::Vertex> endVertices;
 	};
 
 	/*
@@ -73,5 +71,5 @@ namespace geo {
 		@param lsystemOut The Lsystem output.
 		@return The generated geometry.
 	*/
-	Mesh convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut);
+	meshlib::Mesh convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut);
 };

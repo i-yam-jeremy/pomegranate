@@ -15,7 +15,7 @@ geo::Segment& geo::MeshContext::getSegment(int id) {
 }
 
 Mesh geo::convertLsystemToGeo(std::shared_ptr<lsystem::Output> lsystemOut) {
-	Mesh mesh;
+	meshlib::Mesh mesh;
 	MeshCreator creator(mesh, lsystemOut);
 	creator.instance();
 	return mesh;

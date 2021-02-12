@@ -5,7 +5,7 @@
 using namespace glm;
 
 #include <fstream>
-std::ofstream foutIntersections("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
+std::ofstream foutIntersections("/Users/jeremy/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
 
 void geo::MeshCreator::instance() {
 	MeshContext mc;
@@ -67,71 +67,47 @@ bool geo::MeshCreator::edgeIntersectsTriangle(vec3 p1, vec3 p2, vec3 A, vec3 B, 
 	return true;
 }
 
-vec3 geo::MeshCreator::getVertexPos(OpenMesh::SmartVertexHandle v) {
-	auto point = mesh.point(v);
-	return vec3(point[0], point[1], point[2]);
-}
-
-void geo::MeshCreator::edgeIntersectsQuad(const OpenMesh::SmartEdgeHandle edge, const OpenMesh::SmartFaceHandle quad, std::vector<IntersectionPoint>& intersectionPoints) {
-	assert(quad.vertices().count_if([](OpenMesh::SmartVertexHandle a) { return true;  }) == 4);
+void geo::MeshCreator::edgeIntersectsQuad(const Edge edge, const Face quad, std::vector<IntersectionPoint>& intersectionPoints) {
+	assert(quad.vertices().size() == 4);
 	float t;
 	vec3 hitPos;
-	auto p1 = getVertexPos(edge.v0());
-	auto p2 = getVertexPos(edge.v1());
+	auto p1 = edge.v0().pos();
+	auto p2 = edge.v1().pos();
 	std::vector<vec3> quadPos;
 	for (const auto& v : quad.vertices()) {
-		quadPos.push_back(getVertexPos(v));
+		quadPos.push_back(v.pos());
 	}
 	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[1], quadPos[2], hitPos, t)) {
-		const auto v = editableBranchFacesByIndex.find(quad.idx());
-		if (v == editableBranchFacesByIndex.end()) {
-			editableBranchFacesByIndex[quad.idx()] = editableBranchFaces.size();
-			editableBranchFaces[editableBranchFaces.size()] = quad;
-		}
-		const EditableFaceHandle f = (v == editableBranchFacesByIndex.end()) ? editableBranchFaces.size() - 1 : v->second;
-		IntersectionPoint p = { hitPos, t, edge, f };
+		IntersectionPoint p = { hitPos, t, edge, quad };
 		intersectionPoints.push_back(p);
 	}
 	if (edgeIntersectsTriangle(p1, p2, quadPos[0], quadPos[2], quadPos[3], hitPos, t)) {
-		const auto v = editableBranchFacesByIndex.find(quad.idx());
-		if (v == editableBranchFacesByIndex.end()) {
-			editableBranchFacesByIndex[quad.idx()] = editableBranchFaces.size();
-			editableBranchFaces[editableBranchFaces.size()] = quad;
-		}
-		const EditableFaceHandle f = (v == editableBranchFacesByIndex.end()) ? editableBranchFaces.size() - 1 : v->second;
-		IntersectionPoint p = { hitPos, t, edge, f };
+		IntersectionPoint p = { hitPos, t, edge, quad };
 		intersectionPoints.push_back(p);
 	}
 }
 
-void geo::MeshCreator::generateQuad(std::vector<OpenMesh::SmartVertexHandle>& dest, const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, const int bridgeOffset, const int quadIndex) {
+void geo::MeshCreator::generateQuad(std::vector<Vertex>& dest, const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, const int bridgeOffset, const int quadIndex) {
 	assert(loop1.size() == loop2.size());
-	// Copies vertices to avoid non-manifold vertex/edge errors (complex vertex / complex edge)
+
 	dest.push_back(loop1[quadIndex]);
 	dest.push_back(loop1[(quadIndex + 1) % loop1.size()]);
 	dest.push_back(loop2[(quadIndex + bridgeOffset + 1) % loop1.size()]);
 	dest.push_back(loop2[(quadIndex + bridgeOffset) % loop1.size()]);
-
-	for (int i = 0; i < dest.size(); i++) {
-		auto p = mesh.point(dest[i]);
-		dest[i] = mesh.add_vertex(p);
-	}
 }
 
-int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
+int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, vec3 loop1Normal, vec3 loop2Normal) {
 	assert(loop1.size() == loop2.size());
 
 	std::vector<vec3> loop1Points;
 	std::vector<vec3> loop2Points;
 
 	for (const auto& v : loop1) {
-		auto p = mesh.point(v);
-		loop1Points.push_back(vec3(p[0], p[1], p[2]));
+		loop1Points.push_back(v.pos());
 	}
 
 	for (const auto& v : loop2) {
-		auto p = mesh.point(v);
-		loop2Points.push_back(vec3(p[0], p[1], p[2]));
+		loop2Points.push_back(v.pos());
 	}
 
 
@@ -154,17 +130,17 @@ int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<OpenMesh::SmartV
 	return bestOffset;
 }
 
-void geo::MeshCreator::bridgeEdgeLoop(const std::vector<OpenMesh::SmartVertexHandle>& loop1, const std::vector<OpenMesh::SmartVertexHandle>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
+void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
-	std::vector<OpenMesh::SmartVertexHandle> quad;
+	std::vector<Vertex> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
 		generateQuad(quad, loop1, loop2, offset, j);
-		const auto face = mesh.add_face(quad);
-		const auto edges = face.edges().to_vector();
+		const auto face = mesh.addFace(quad);
+		const auto edges = face.edges();
 		bridge.mainEdges.push_back(edges[0]);
-		bridge.mainEdges.push_back(edges[2]);
+		// bridge.mainEdges.push_back(edges[2]); // Just need one edge because the next edge will be captured by the next quad
 		bridge.quads.push_back(face);
 	}
 }
@@ -182,41 +158,10 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 	}
 }
 
-void geo::MeshCreator::splitHalfEdge(OpenMesh::SmartHalfedgeHandle target, OpenMesh::SmartVertexHandle newVertex) {
-	const auto face = editableBranchFacesByIndex[target.face().idx()];
-	editableBranchFacesByIndex.erase(target.face().idx());
-
-	std::vector<OpenMesh::SmartVertexHandle> newFaceVertices;
-	for (const auto he : target.face().halfedges()) {
-		newFaceVertices.push_back(he.from());
-		if (he.idx() == target.idx()) {
-			newFaceVertices.push_back(newVertex);
-		}
-	}
-
-	std::cout << "Hello" << std::endl;
-
-	mesh.request_face_status();
-	mesh.request_edge_status();
-	mesh.request_vertex_status();
-	mesh.delete_face(target.face());
-	std::cout << "W" << std::endl;
-	mesh.garbage_collection();
-
-	std::cout << "Hi" << std::endl;
-
-	const auto newFace = mesh.add_face(newFaceVertices);
-	editableBranchFaces[face] = newFace;
-	editableBranchFacesByIndex[newFace.idx()] = face;
-	std::cout << target.face().idx() << " -> " << newFace.idx() << std::endl;
-}
-
-void geo::MeshCreator::createManifoldBranchHull(const std::vector<IntersectionPoint> intersections) {
-	for (const auto& p : intersections) {
-		const auto v = mesh.add_vertex(Mesh::Point(p.pos.x, p.pos.y, p.pos.z));
-		splitHalfEdge(p.edge.h0(), v);
-		splitHalfEdge(p.edge.h1(), v);
-		// TODO update other face references (because faces have been deleted and replaced)
+void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
+	for (auto& p : intersections) {
+		p.edge.split(p.t);
+		// TODO do rest of manifold mesh creation
 	}
 }
 
@@ -233,9 +178,6 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 		bridges.push_back(bridge);
 	}
 
-	editableBranchFaces.clear();
-	editableBranchFacesByIndex.clear();
-
 	std::vector<IntersectionPoint> intersectionPoints;
 	for (int i = 0; i < bridges.size(); i++) {
 		for (int j = i + 1; j < bridges.size(); j++) {
@@ -247,24 +189,24 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 }
 
 void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
-	std::vector<OpenMesh::SmartVertexHandle> vertices;
+	std::vector<Vertex> vertices;
 	if (segment.parent != nullptr && segment.parent->children.size() == 1) {
-		vertices = std::vector<OpenMesh::SmartVertexHandle>(mc.getSegment(segment.parent->id).endVertices);
+		vertices = std::vector<Vertex>(mc.getSegment(segment.parent->id).endVertices);
 	}
 	else {
 		createCircle(vertices, segment.mat, segment.translation, 0, pointCount);
 	}
-	auto startVertices = std::vector<OpenMesh::SmartVertexHandle>(vertices);
+	auto startVertices = std::vector<Vertex>(vertices);
 	for (int j = 0; j <= rings; j++) {
 		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
 		createCircle(vertices, segment.mat, segment.translation, interpFactor, pointCount);
 		for (int i = 0; i < pointCount; i++) {
-			std::vector<OpenMesh::SmartVertexHandle> faceVertices;
+			std::vector<Vertex> faceVertices;
 			faceVertices.push_back(vertices[i]);
 			faceVertices.push_back(vertices[((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + ((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + i]);
-			mesh.add_face(faceVertices);
+			mesh.addFace(faceVertices);
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
@@ -274,11 +216,11 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	}
 }
 
-void geo::MeshCreator::createCircle(std::vector<OpenMesh::SmartVertexHandle>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {
+void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {
 	for (int i = 0; i < pointCount; i++) {
 		vec3 circleOffset = vec3(interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
 		vec3 p = vec4(circleOffset, 1) * mat;
 		p += translation;
-		vertices.push_back(mesh.add_vertex(Mesh::Point(p.x, p.y, p.z)));
+		vertices.push_back(mesh.addVertex(p));
 	}
 }

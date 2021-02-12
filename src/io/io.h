@@ -11,7 +11,7 @@
 */
 namespace io {
 	/*
-		Exports the given Lsystem output as points for a rig to be used 
+		Exports the given Lsystem output as points for a rig to be used
 		within Houdini.
 		@param path The output file path.
 		@param out The Lsystem output to use for the rig.
@@ -22,7 +22,7 @@ namespace io {
 		@param path The output file path.
 		@param mesh The mesh to be exported.
 	*/
-	void exportMesh(std::string path, Mesh& mesh);
+	void exportMesh(std::string path, meshlib::Mesh& mesh);
 	/*
 		Returns the full contents of the given text file.
 		@param path The path to the text file.
