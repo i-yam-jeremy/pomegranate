@@ -185,7 +185,7 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 void geo::MeshCreator::splitHalfEdge(OpenMesh::SmartHalfedgeHandle target, OpenMesh::SmartVertexHandle newVertex) {
 	const auto face = editableBranchFacesByIndex[target.face().idx()];
 	editableBranchFacesByIndex.erase(target.face().idx());
-	
+
 	std::vector<OpenMesh::SmartVertexHandle> newFaceVertices;
 	for (const auto he : target.face().halfedges()) {
 		newFaceVertices.push_back(he.from());
@@ -196,7 +196,15 @@ void geo::MeshCreator::splitHalfEdge(OpenMesh::SmartHalfedgeHandle target, OpenM
 
 	std::cout << "Hello" << std::endl;
 
-	//mesh.delete_face(target.face());
+	mesh.request_face_status();
+	mesh.request_edge_status();
+	mesh.request_vertex_status();
+	mesh.delete_face(target.face());
+	std::cout << "W" << std::endl;
+	mesh.garbage_collection();
+
+	std::cout << "Hi" << std::endl;
+
 	const auto newFace = mesh.add_face(newFaceVertices);
 	editableBranchFaces[face] = newFace;
 	editableBranchFacesByIndex[newFace.idx()] = face;
@@ -234,7 +242,7 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 			findBridgeIntersections(bridges[i], bridges[j], intersectionPoints);
 		}
 	}
-	
+
 	createManifoldBranchHull(intersectionPoints);
 }
 
