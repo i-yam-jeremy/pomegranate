@@ -7,3 +7,4 @@ dist/*
 build/*
 win-build/*
 houdini/backup/*
+.vscode/*
