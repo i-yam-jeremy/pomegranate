@@ -55,6 +55,14 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 	}
 }
 
+std::vector<meshlib::Face> meshlib::Mesh::getNeighboringFaces(const Vertex& v) {
+	std::vector<Face> faces;
+	for (const auto faceHandle : vertices[getHandle(v)].faces) {
+		faces.push_back(Face(this, faceHandle));
+	}
+	return faces;
+}
+
 void meshlib::Mesh::toOBJ(std::ostream& out) {
 	std::unordered_map<Handle, size_t> vertexIndices;
 	size_t currentVertexIndex = 1;
@@ -87,6 +95,10 @@ meshlib::Handle meshlib::Mesh::getHandle(const Face& f) {
 	return f.handle;
 }
 
+bool meshlib::Vertex::operator==(const Vertex& v) const {
+	return handle == v.handle && mesh == v.mesh;
+}
+
 vec3 meshlib::Vertex::pos() const {
 	return mesh->getVertexPosition(*this);
 }
@@ -104,7 +116,34 @@ meshlib::Vertex meshlib::Edge::v1() const {
 }
 
 void meshlib::Edge::split(float t) {
-	// TODO
+	const auto allFaces = m_mesh->getNeighboringFaces(m_v0);
+	std::vector<Face> faces;
+	for (const auto& face : allFaces) {
+		const auto vertices = face.vertices();
+		const auto& found = std::find(vertices.begin(), vertices.end(), m_v1);
+		if (found == vertices.end()) {
+			faces.push_back(face);
+		}
+	}
+	assert(faces.size() <= 2); // There cannot be more than 2 faces that share an edge
+	for (auto& face : faces) {
+		auto vertices = face.vertices();
+		for (int i = 0; i < vertices.size(); i++) {
+			auto a = vertices[i];
+			auto b = vertices[(i+1)%vertices.size()];
+			if (a == m_v1 && b == m_v0) { // If edge going the opposite direction, then invert t
+				t = 1.0f - t;
+				std::swap(a, b);
+			}
+
+			if (a == m_v0 && b == m_v1) {
+				const auto newVertex = m_mesh->addVertex(a.pos() + t*(b.pos() - a.pos()));
+				vertices.insert(vertices.begin() + i + 1, newVertex);
+				break;
+			}
+		}
+		face.update(vertices);
+	}
 }
 
 std::vector<meshlib::Vertex> meshlib::Face::vertices() const {

@@ -27,6 +27,8 @@ namespace meshlib {
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 
+		std::vector<Face> getNeighboringFaces(const Vertex& v);
+
 		void toOBJ(std::ostream& out);
 
 		Handle getHandle(const Vertex& v);
@@ -51,6 +53,7 @@ namespace meshlib {
 		Vertex(Mesh* mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
+		bool operator==(const Vertex& v) const;
 		vec3 pos() const;
 		void pos(vec3 p);
 		friend Handle Mesh::getHandle(const Vertex& v);

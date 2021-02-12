@@ -21,9 +21,9 @@ int main(/*int argc, char** argv*/) {
 	int argc = 4;
 	char* argv[] ={ 
 	"Pomegranate",
-	"../examples/test-input.txt",
+	"/Users/jeremy/Documents/GitHub/pomegranate/examples/test-input.txt",
 	"--seed=0",
-	"--override-generations=2.5"};
+	"--override-generations=5"};
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {
