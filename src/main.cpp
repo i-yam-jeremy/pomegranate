@@ -17,11 +17,13 @@ std::istream& operator>>(std::istream& stream, std::string& s) {
 	return stream >> s;
 }
 
-int main(int argc, char** argv) {
-	argc = 4;
-	argv[1] = "C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt";
-	argv[2] = "--seed=0";
-	argv[3] = "--override-generations=2.5";
+int main(/*int argc, char** argv*/) {
+	int argc = 4;
+	char* argv[] ={ 
+	"Pomegranate",
+	"../examples/test-input.txt",
+	"--seed=0",
+	"--override-generations=2.5"};
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {

@@ -17,6 +17,22 @@ meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts) {
 	return Face(*this, handle);
 }
 
+std::vector<meshlib::Vertex> meshlib::Mesh::getFaceVertices(Face& f) {
+	std::vector<Vertex> verts;
+	for (const auto& vertexHandle : faces[getHandle(f)].vertices) {
+		verts.push_back(Vertex(*this, vertexHandle));
+	}
+	return verts;
+}
+
+void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
+	auto& vertices = faces[getHandle(f)].vertices;
+	vertices.clear();
+	for (auto& v : verts) {
+		vertices.push_back(getHandle(v));
+	}
+}
+
 void meshlib::Mesh::toOBJ(std::ostream& out) {
 	std::unordered_map<Handle, size_t> vertexIndices;
 	size_t currentVertexIndex = 0;
@@ -47,4 +63,12 @@ meshlib::Handle meshlib::Mesh::getHandle(Vertex& v) {
 
 meshlib::Handle meshlib::Mesh::getHandle(Face& f) {
 	return f.handle;
+}
+
+std::vector<meshlib::Vertex> meshlib::Face::vertices() {
+	return mesh.getFaceVertices(*this);
+}
+
+void meshlib::Face::update(std::vector<Vertex>& verts) {
+	mesh.updateFaceVertices(*this, verts);
 }

@@ -9,7 +9,7 @@ using namespace glm;
 
 namespace meshlib {
 	typedef size_t Handle;
-	
+
 	class Vertex;
 	class Face;
 
@@ -18,7 +18,12 @@ namespace meshlib {
 		Mesh() {};
 		Vertex addVertex(vec3 p);
 		Face addFace(std::vector<Vertex>& verts);
+
+		std::vector<Vertex> getFaceVertices(Face& f);
+		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
+
 		void toOBJ(std::ostream& out);
+
 		Handle getHandle(Vertex& v);
 		Handle getHandle(Face& f);
 	private:
@@ -40,6 +45,7 @@ namespace meshlib {
 		Vertex(Mesh& mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
+
 		friend Handle Mesh::getHandle(Vertex& v);
 	private:
 		Mesh& mesh;
@@ -51,6 +57,10 @@ namespace meshlib {
 		Face(Mesh& mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
+
+		std::vector<Vertex> vertices();
+		void update(std::vector<Vertex>& verts);
+
 		friend Handle Mesh::getHandle(Face& v);
 	private:
 		Mesh& mesh;
