@@ -57,6 +57,7 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 
 std::vector<meshlib::Face> meshlib::Mesh::getNeighboringFaces(const Vertex& v) {
 	std::vector<Face> faces;
+
 	for (const auto faceHandle : vertices[getHandle(v)].faces) {
 		faces.push_back(Face(this, faceHandle));
 	}
@@ -116,16 +117,17 @@ meshlib::Vertex meshlib::Edge::v1() const {
 }
 
 void meshlib::Edge::split(float t) {
+	t = 1.0f-t;
 	const auto allFaces = m_mesh->getNeighboringFaces(m_v0);
 	std::vector<Face> faces;
 	for (const auto& face : allFaces) {
 		const auto vertices = face.vertices();
 		const auto& found = std::find(vertices.begin(), vertices.end(), m_v1);
-		if (found == vertices.end()) {
+		if (found != vertices.end()) {
 			faces.push_back(face);
 		}
 	}
-	assert(faces.size() <= 2); // There cannot be more than 2 faces that share an edge
+
 	for (auto& face : faces) {
 		auto vertices = face.vertices();
 		for (int i = 0; i < vertices.size(); i++) {

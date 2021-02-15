@@ -139,8 +139,7 @@ void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const st
 		generateQuad(quad, loop1, loop2, offset, j);
 		const auto face = mesh.addFace(quad);
 		const auto edges = face.edges();
-		bridge.mainEdges.push_back(edges[0]);
-		// bridge.mainEdges.push_back(edges[2]); // Just need one edge because the next edge will be captured by the next quad
+		bridge.mainEdges.push_back(edges[1]); // Just need one edge because the next edge will be captured by the next quad
 		bridge.quads.push_back(face);
 	}
 }
@@ -183,6 +182,10 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 		for (int j = i + 1; j < bridges.size(); j++) {
 			findBridgeIntersections(bridges[i], bridges[j], intersectionPoints);
 		}
+	}
+
+	for (const auto& p : intersectionPoints) {
+		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
 	}
 
 	createManifoldBranchHull(intersectionPoints);
