@@ -1,6 +1,7 @@
 #include "meshlib.h"
 
 #include <algorithm>
+#include <cstdarg>
 
 meshlib::Vertex meshlib::Mesh::addVertex(vec3 p) {
 	VertexData data{p};
@@ -116,7 +117,7 @@ meshlib::Vertex meshlib::Edge::v1() const {
 	return m_v1;
 }
 
-void meshlib::Edge::split(float t) {
+meshlib::Vertex meshlib::Edge::split(float t) {
 	t = 1.0f-t;
 	const auto allFaces = m_mesh->getNeighboringFaces(m_v0);
 	std::vector<Face> faces;
@@ -141,11 +142,14 @@ void meshlib::Edge::split(float t) {
 			if (a == m_v0 && b == m_v1) {
 				const auto newVertex = m_mesh->addVertex(a.pos() + t*(b.pos() - a.pos()));
 				vertices.insert(vertices.begin() + i + 1, newVertex);
-				break;
+				m_v1 = newVertex;
+				return newVertex;
 			}
 		}
 		face.update(vertices);
 	}
+
+	assert(false); // Should never reach here, should always find edge
 }
 
 std::vector<meshlib::Vertex> meshlib::Face::vertices() const {

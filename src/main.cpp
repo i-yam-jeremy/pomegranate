@@ -21,7 +21,7 @@ int main(/*int argc, char** argv*/) {
 	int argc = 4;
 	char* argv[] ={ 
 	"Pomegranate",
-	"/Users/jeremy/Documents/GitHub/pomegranate/examples/test-input.txt",
+	"C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt",
 	"--seed=0",
 	"--override-generations=5"};
 

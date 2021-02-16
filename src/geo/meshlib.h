@@ -70,7 +70,7 @@ namespace meshlib {
 			m_v1(v1) {};
 		Vertex v0() const;
 		Vertex v1() const;
-		void split(float t);
+		Vertex split(float t);
 	private:
 		Mesh* m_mesh;
 		Vertex m_v0, m_v1;

@@ -159,7 +159,15 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
 	for (auto& p : intersections) {
-		p.edge.split(p.t);
+		const auto newVertex = p.edge.split(p.t);
+		const auto verts = p.other.vertices();
+		for (int i = 0; i < verts.size(); i++) {
+			std::vector<Vertex> v;
+			v.push_back(newVertex);
+			v.push_back(verts[i]);
+			v.push_back(verts[(i + 1) % verts.size()]);
+			mesh.addFace(v);
+		}
 		// TODO do rest of manifold mesh creation
 	}
 }
@@ -184,9 +192,9 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 		}
 	}
 
-	for (const auto& p : intersectionPoints) {
+	/*for (const auto& p : intersectionPoints) {
 		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
-	}
+	}*/
 
 	createManifoldBranchHull(intersectionPoints);
 }
