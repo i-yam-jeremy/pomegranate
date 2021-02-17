@@ -4,7 +4,6 @@ project(Pomegranate)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(openmesh REQUIRED)
 find_package(glm CONFIG REQUIRED)
 link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib) # for antlr4
 
@@ -42,8 +41,6 @@ add_executable(Pomegranate
 
 target_include_directories(Pomegranate PUBLIC "${PROJECT_SOURCE_DIR}/src")
 
-target_include_directories(Pomegranate PRIVATE ${OPENMESH_INCLUDE_DIRS})
-target_link_libraries(Pomegranate PRIVATE ${OPENMESH_LIBRARIES})
 target_link_libraries(Pomegranate PRIVATE glm)
 target_include_directories(Pomegranate PRIVATE ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/antlr4-runtime)
 target_link_libraries(Pomegranate PRIVATE antlr4-runtime)
