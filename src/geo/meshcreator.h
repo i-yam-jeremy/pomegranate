@@ -36,6 +36,7 @@ namespace geo {
 		void bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge);
 		void findBridgeIntersections(const Bridge& bridge, const Bridge& otherBridge, std::vector<IntersectionPoint>& intersectionPoints);
 
+		std::vector<IntersectionPoint> findOutermostIntersections(std::vector<IntersectionPoint>& points);
 		void createManifoldBranchHull(std::vector<IntersectionPoint> intersections);
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);

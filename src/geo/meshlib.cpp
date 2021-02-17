@@ -1,8 +1,5 @@
 #include "meshlib.h"
 
-#include <algorithm>
-#include <cstdarg>
-
 meshlib::Vertex meshlib::Mesh::addVertex(vec3 p) {
 	VertexData data{p};
 	size_t handle = getNextHandle();
@@ -17,6 +14,14 @@ meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts) {
 	auto f = Face(this, handle);
 	updateFaceVertices(f, verts);
 	return f;
+}
+
+void meshlib::Mesh::deleteFace(Face& f) {
+	faces.erase(getHandle(f));
+}
+
+size_t meshlib::Mesh::getVertexCount() const {
+	return vertices.size();
 }
 
 vec3 meshlib::Mesh::getVertexPosition(const Vertex& v) {
@@ -101,12 +106,27 @@ bool meshlib::Vertex::operator==(const Vertex& v) const {
 	return handle == v.handle && mesh == v.mesh;
 }
 
+size_t meshlib::Vertex::hash() const {
+	return handle;
+}
+
 vec3 meshlib::Vertex::pos() const {
 	return mesh->getVertexPosition(*this);
 }
 
 void meshlib::Vertex::pos(vec3 p) {
 	mesh->updateVertexPosition(*this, p);
+}
+
+bool meshlib::Edge::operator==(const Edge& other) const {
+	return m_mesh == other.m_mesh && 
+		m_v0 == other.m_v0 &&
+		m_v1 == other.m_v1;
+}
+
+size_t meshlib::Edge::hash() const {
+	const auto meshVertexCount = m_mesh->getVertexCount();
+	return m_v0.hash() * meshVertexCount + m_v1.hash();
 }
 
 meshlib::Vertex meshlib::Edge::v0() const {
@@ -118,7 +138,6 @@ meshlib::Vertex meshlib::Edge::v1() const {
 }
 
 meshlib::Vertex meshlib::Edge::split(float t) {
-	t = 1.0f-t;
 	const auto allFaces = m_mesh->getNeighboringFaces(m_v0);
 	std::vector<Face> faces;
 	for (const auto& face : allFaces) {
@@ -129,27 +148,30 @@ meshlib::Vertex meshlib::Edge::split(float t) {
 		}
 	}
 
+	const auto newVertex = m_mesh->addVertex(m_v0.pos() + t * (m_v1.pos() - m_v0.pos()));
+
 	for (auto& face : faces) {
 		auto vertices = face.vertices();
 		for (int i = 0; i < vertices.size(); i++) {
 			auto a = vertices[i];
 			auto b = vertices[(i+1)%vertices.size()];
-			if (a == m_v1 && b == m_v0) { // If edge going the opposite direction, then invert t
-				t = 1.0f - t;
-				std::swap(a, b);
+			if (a == m_v1 && b == m_v0) {
+				vertices[(i + 1) % vertices.size()] = newVertex;
+				m_v1 = newVertex;
+				face.update(vertices);
+				break;
 			}
 
 			if (a == m_v0 && b == m_v1) {
-				const auto newVertex = m_mesh->addVertex(a.pos() + t*(b.pos() - a.pos()));
-				vertices.insert(vertices.begin() + i + 1, newVertex);
-				m_v1 = newVertex;
-				return newVertex;
+				vertices[i] = newVertex;
+				m_v0 = newVertex;
+				face.update(vertices);
+				break;
 			}
 		}
-		face.update(vertices);
 	}
 
-	assert(false); // Should never reach here, should always find edge
+	return newVertex;
 }
 
 std::vector<meshlib::Vertex> meshlib::Face::vertices() const {

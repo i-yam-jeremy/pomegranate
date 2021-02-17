@@ -5,7 +5,7 @@
 using namespace glm;
 
 #include <fstream>
-std::ofstream foutIntersections("/Users/jeremy/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
+std::ofstream foutIntersections("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
 
 void geo::MeshCreator::instance() {
 	MeshContext mc;
@@ -157,19 +157,44 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 	}
 }
 
+std::vector<geo::MeshCreator::IntersectionPoint> geo::MeshCreator::findOutermostIntersections(std::vector<IntersectionPoint>& points) {
+	std::unordered_map<unsigned long, IntersectionPoint*> outermostIntersections;
+	
+	for (auto& p : points) {
+		auto& entry = outermostIntersections.find(p.edge.hash());
+		if (entry == outermostIntersections.end() || entry->second->t < p.t) {
+			outermostIntersections[p.edge.hash()] = &p;
+		}
+	}
+
+	std::vector<IntersectionPoint> filteredPoints;
+	for (const auto& entry : outermostIntersections) {
+		filteredPoints.push_back(*(entry.second));
+	}
+
+	return filteredPoints;
+}
+
+
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
 	for (auto& p : intersections) {
+		const auto oldVertex = p.edge.v1();
 		const auto newVertex = p.edge.split(p.t);
-		const auto verts = p.other.vertices();
+		
+		/*const auto verts = p.other.vertices();
 		for (int i = 0; i < verts.size(); i++) {
 			std::vector<Vertex> v;
 			v.push_back(newVertex);
 			v.push_back(verts[i]);
 			v.push_back(verts[(i + 1) % verts.size()]);
 			mesh.addFace(v);
-		}
+		}*/
 		// TODO do rest of manifold mesh creation
 	}
+
+	/*for (auto& p : intersections) {
+		mesh.deleteFace(p.other);
+	}*/
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
@@ -192,9 +217,11 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 		}
 	}
 
-	/*for (const auto& p : intersectionPoints) {
+	intersectionPoints = findOutermostIntersections(intersectionPoints);
+
+	for (const auto& p : intersectionPoints) {
 		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
-	}*/
+	}
 
 	createManifoldBranchHull(intersectionPoints);
 }

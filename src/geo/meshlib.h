@@ -21,6 +21,10 @@ namespace meshlib {
 		Vertex addVertex(vec3 p);
 		Face addFace(std::vector<Vertex>& verts);
 
+		void deleteFace(Face& f);
+
+		size_t getVertexCount() const;
+
 		vec3 getVertexPosition(const Vertex& v);
 		void updateVertexPosition(Vertex& v, vec3 pos);
 
@@ -54,6 +58,7 @@ namespace meshlib {
 			mesh(mesh),
 			handle(handle) {};
 		bool operator==(const Vertex& v) const;
+		size_t hash() const;
 		vec3 pos() const;
 		void pos(vec3 p);
 		friend Handle Mesh::getHandle(const Vertex& v);
@@ -68,6 +73,8 @@ namespace meshlib {
 			m_mesh(mesh),
 			m_v0(v0),
 			m_v1(v1) {};
+		bool operator==(const Edge& other) const;
+		size_t hash() const;
 		Vertex v0() const;
 		Vertex v1() const;
 		Vertex split(float t);
