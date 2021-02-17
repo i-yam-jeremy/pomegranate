@@ -158,7 +158,7 @@ void geo::MeshCreator::findBridgeIntersections(const Bridge& bridge, const Bridg
 }
 
 std::vector<geo::MeshCreator::IntersectionPoint> geo::MeshCreator::findOutermostIntersections(std::vector<IntersectionPoint>& points) {
-	std::unordered_map<unsigned long, IntersectionPoint*> outermostIntersections;
+	std::unordered_map<size_t, IntersectionPoint*> outermostIntersections;
 	
 	for (auto& p : points) {
 		auto& entry = outermostIntersections.find(p.edge.hash());
@@ -177,24 +177,28 @@ std::vector<geo::MeshCreator::IntersectionPoint> geo::MeshCreator::findOutermost
 
 
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
+	std::vector<Vertex> newVertices;
 	for (auto& p : intersections) {
-		const auto oldVertex = p.edge.v1();
 		const auto newVertex = p.edge.split(p.t);
-		
-		/*const auto verts = p.other.vertices();
-		for (int i = 0; i < verts.size(); i++) {
-			std::vector<Vertex> v;
-			v.push_back(newVertex);
-			v.push_back(verts[i]);
-			v.push_back(verts[(i + 1) % verts.size()]);
-			mesh.addFace(v);
-		}*/
-		// TODO do rest of manifold mesh creation
+		newVertices.push_back(newVertex);
 	}
 
-	/*for (auto& p : intersections) {
+	for (int i = 0; i < intersections.size(); i++) {
+		auto& p = intersections[i];
+		const auto newVertex = newVertices[i];
+		const auto verts = p.other.vertices();
+		for (int j = 0; j < verts.size(); j++) {
+			std::vector<Vertex> v;
+			v.push_back(newVertex);
+			v.push_back(verts[j]);
+			v.push_back(verts[(j + 1) % verts.size()]);
+			mesh.addFace(v);
+		}
+	}
+
+	for (auto& p : intersections) {
 		mesh.deleteFace(p.other);
-	}*/
+	}
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
