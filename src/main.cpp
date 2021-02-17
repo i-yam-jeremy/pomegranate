@@ -10,13 +10,6 @@
 #include "geo/geo.h"
 #include "value/Random.h"
 
-/*
-	Overload for parsing std::string with flags.h argument parser
-*/
-std::istream& operator>>(std::istream& stream, std::string& s) {
-	return stream >> s;
-}
-
 int main(/*int argc, char** argv*/) {
 	int argc = 4;
 	char* argv[] ={ 
