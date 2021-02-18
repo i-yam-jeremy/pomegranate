@@ -34,9 +34,6 @@ int main(/*int argc, char** argv*/) {
 
 	Random::seed(seed);
 
-	if (generations.has_value()) {
-		std::cout << "Generations: " << generations.value() << std::endl;
-	}
 	auto out = generations.has_value() ? lsystem::compile(source, generations.value(), true) : lsystem::compile(source);
 	auto mesh = geo::convertLsystemToGeo(out);
 
