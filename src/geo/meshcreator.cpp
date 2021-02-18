@@ -432,6 +432,8 @@ void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec
 		vec3 circleOffset = vec3(interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
 		vec3 p = vec4(circleOffset, 1) * mat;
 		p += translation;
-		vertices.push_back(mesh.addVertex(p));
+		auto v = mesh.addVertex(p);
+		v.uv(vec2(float(i)/pointCount, interpFactor));
+		vertices.push_back(v);
 	}
 }

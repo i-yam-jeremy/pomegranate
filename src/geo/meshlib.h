@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 #include <ostream>
 #include <utility>
 
@@ -27,6 +28,8 @@ namespace meshlib {
 
 		vec3 getVertexPosition(const Vertex& v);
 		void updateVertexPosition(Vertex& v, vec3 pos);
+		vec2 getVertexUV(const Vertex& v);
+		void updateVertexUV(Vertex& v, vec2 uv);
 
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
@@ -45,6 +48,7 @@ namespace meshlib {
 		Handle currentHandle = 0;
 		struct VertexData {
 			vec3 position;
+			vec2 uv;
 			std::vector<Handle> faces;
 		};
 		struct FaceData {
@@ -63,6 +67,8 @@ namespace meshlib {
 		size_t hash() const;
 		vec3 pos() const;
 		void pos(vec3 p);
+		vec2 uv() const;
+		void uv(vec2 tx);
 		friend Handle Mesh::getHandle(const Vertex& v);
 	private:
 		Mesh* mesh;

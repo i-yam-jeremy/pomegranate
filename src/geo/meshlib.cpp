@@ -32,6 +32,14 @@ void meshlib::Mesh::updateVertexPosition(Vertex& v, vec3 pos) {
 	vertices[getHandle(v)].position = pos;
 }
 
+vec2 meshlib::Mesh::getVertexUV(const Vertex& v) {
+	return vertices[getHandle(v)].uv;
+}
+
+void meshlib::Mesh::updateVertexUV(Vertex& v, vec2 uv) {
+	vertices[getHandle(v)].uv = uv;
+}
+
 std::vector<meshlib::Vertex> meshlib::Mesh::getFaceVertices(const Face& f) {
 	std::vector<Vertex> verts;
 	for (const auto& vertexHandle : faces[getHandle(f)].vertices) {
@@ -91,6 +99,7 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 	for (const auto& entry : vertices) {
 		const auto& v = entry.second;
 		out << "v " << v.position.x << " " << v.position.y << " " << v.position.z << std::endl;
+		out << "vt " << v.uv.x << " " << v.uv.y << std::endl;
 		vertexIndices[entry.first] = currentVertexIndex;
 		currentVertexIndex++;
 	}
@@ -100,7 +109,8 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 		out << "f ";
 		for (const auto& v : face.second.vertices) {
 			const auto vertexIndex = vertexIndices[v];
-			out << vertexIndex << " ";
+			const auto uvIndex = vertexIndex;
+			out << vertexIndex << "/" << uvIndex << " ";
 		}
 		out << std::endl;
 	}
@@ -132,6 +142,14 @@ vec3 meshlib::Vertex::pos() const {
 
 void meshlib::Vertex::pos(vec3 p) {
 	mesh->updateVertexPosition(*this, p);
+}
+
+vec2 meshlib::Vertex::uv() const {
+	return mesh->getVertexUV(*this);
+}
+
+void meshlib::Vertex::uv(vec2 tx) {
+	mesh->updateVertexUV(*this, tx);
 }
 
 bool meshlib::Edge::operator==(const Edge& other) const {
@@ -170,7 +188,8 @@ std::vector<meshlib::Face> meshlib::Edge::neighboringFaces() const {
 meshlib::Vertex meshlib::Edge::split(float t) {
 	std::vector<Face> faces = neighboringFaces();
 
-	const auto newVertex = m_mesh->addVertex(m_v0.pos() + t * (m_v1.pos() - m_v0.pos()));
+	auto newVertex = m_mesh->addVertex(m_v0.pos() + t * (m_v1.pos() - m_v0.pos()));
+	newVertex.uv(m_v0.uv() + t * (m_v1.uv() - m_v0.uv()));
 
 	int edgesFound = 0;
 	for (auto& face : faces) {
