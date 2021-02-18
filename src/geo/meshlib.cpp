@@ -7,8 +7,9 @@ meshlib::Vertex meshlib::Mesh::addVertex(vec3 p) {
 	return Vertex(this, handle);
 }
 
-meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts) {
+meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts, std::string type) {
 	FaceData data;
+	data.type = type;
 	size_t handle = getNextHandle();
 	faces[handle] = data;
 	auto f = Face(this, handle);
@@ -69,6 +70,10 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 	}
 }
 
+std::string meshlib::Mesh::getFaceType(const Face& f) {
+	return faces[getHandle(f)].type;
+}
+
 void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 	a.pos((a.pos() + b.pos()) / 2.0f);
 
@@ -104,15 +109,20 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 		currentVertexIndex++;
 	}
 
-	for (const auto& face : faces) {
-		if (face.second.vertices.size() < 3) continue;
-		out << "f ";
-		for (const auto& v : face.second.vertices) {
-			const auto vertexIndex = vertexIndices[v];
-			const auto uvIndex = vertexIndex;
-			out << vertexIndex << "/" << uvIndex << " ";
+	for (const auto& type : segmentTypes) {
+		out << "g " << type << std::endl;
+		out << "usemtl " << type << std::endl;
+		for (const auto& face : faces) {
+			if (face.second.vertices.size() < 3) continue;
+			if (face.second.type != type) continue;
+			out << "f ";
+			for (const auto& v : face.second.vertices) {
+				const auto vertexIndex = vertexIndices[v];
+				const auto uvIndex = vertexIndex;
+				out << vertexIndex << "/" << uvIndex << " ";
+			}
+			out << std::endl;
 		}
-		out << std::endl;
 	}
 }
 
@@ -234,6 +244,10 @@ std::vector<meshlib::Edge> meshlib::Face::edges() const {
 		edges.push_back(Edge(mesh, verts[i], verts[(i+1)%verts.size()]));
 	}
 	return edges;
+}
+
+std::string meshlib::Face::type() const {
+	return mesh->getFaceType(*this);
 }
 
 void meshlib::Face::update(std::vector<Vertex>& verts) {

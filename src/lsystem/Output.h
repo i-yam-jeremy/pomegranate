@@ -80,11 +80,20 @@ namespace lsystem {
 		*/
 		const std::vector<std::shared_ptr<OutputSegment>>& getSegments();
 
+		/*
+			Returns all segment types.
+			@return All segment types.
+		*/
+		const std::vector<std::string>& getSegmentTypes();
 	private:
 		/*
 			The segments in this output collection.
 		*/
 		std::vector<std::shared_ptr<OutputSegment>> segments;
+		/*
+			All segment types (based on L-system rules).
+		*/
+		std::vector<std::string> segmentTypes;
 	};
 
 }

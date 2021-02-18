@@ -18,9 +18,10 @@ namespace meshlib {
 
 	class Mesh {
 	public:
-		Mesh() {};
+		Mesh(std::vector<std::string> segmentTypes) :
+			segmentTypes(segmentTypes) {};
 		Vertex addVertex(vec3 p);
-		Face addFace(std::vector<Vertex>& verts);
+		Face addFace(std::vector<Vertex>& verts, std::string type);
 
 		void deleteFace(Face& f);
 
@@ -33,6 +34,7 @@ namespace meshlib {
 
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
+		std::string getFaceType(const Face& f);
 
 		void mergeVertices(Vertex& a, Vertex& b);
 
@@ -53,9 +55,11 @@ namespace meshlib {
 		};
 		struct FaceData {
 			std::vector<Handle> vertices;
+			std::string type;
 		};
 		std::unordered_map<Handle, VertexData> vertices;
 		std::unordered_map<Handle, FaceData> faces;
+		std::vector<std::string> segmentTypes;
 	};
 
 	class Vertex {
@@ -100,6 +104,7 @@ namespace meshlib {
 		size_t hash() const;
 		std::vector<Vertex> vertices() const;
 		std::vector<Edge> edges() const;
+		std::string type() const;
 
 		void update(std::vector<Vertex>& verts);
 

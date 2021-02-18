@@ -130,14 +130,14 @@ int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<Vertex>& loop1, 
 	return bestOffset;
 }
 
-void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
+void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
 	std::vector<Vertex> quad;
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
 		generateQuad(quad, loop1, loop2, offset, j);
-		const auto face = mesh.addFace(quad);
+		const auto face = mesh.addFace(quad, segmentType);
 		const auto edges = face.edges();
 		bridge.mainEdges.push_back(edges[1]); // Just need one edge because the next edge will be captured by the next quad
 		bridge.quads.push_back(face);
@@ -325,7 +325,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	findConnectedComponents(openEdges, connectedComponents);
 
 	for (auto& group : connectedComponents) {
-		mesh.addFace(group);
+		mesh.addFace(group, "UNKNOWN");
 	}
 
 	/*
@@ -363,7 +363,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 			verts.push_back(vertices[indices[i+0]]);
 			verts.push_back(vertices[indices[i+1]]);
 			verts.push_back(vertices[indices[i+2]]);
-			mesh.addFace(verts);
+			mesh.addFace(verts, face.type());
 		}
 	}
 
@@ -381,6 +381,7 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 		bridgeEdgeLoop(
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
+					   child->type,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
 					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]),
 			bridge);
@@ -417,7 +418,7 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 			faceVertices.push_back(vertices[((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + ((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + i]);
-			mesh.addFace(faceVertices);
+			mesh.addFace(faceVertices, segment.type);
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
