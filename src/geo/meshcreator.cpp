@@ -5,9 +5,6 @@
 
 using namespace glm;
 
-#include <fstream>
-std::ofstream foutIntersections("C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/intersection-pts.txt", std::ios::out);
-
 void geo::MeshCreator::instance() {
 	MeshContext mc;
 	for (const auto& segmentPtr : lsystemOut->getSegments()) {
@@ -258,10 +255,6 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 	}
 
 	intersectionPoints = findOutermostIntersections(intersectionPoints);
-
-	for (const auto& p : intersectionPoints) {
-		foutIntersections << p.pos.x << "," << p.pos.y << "," << p.pos.z << "," << p.t << std::endl;
-	}
 
 	createManifoldBranchHull(intersectionPoints);
 }
