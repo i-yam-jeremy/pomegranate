@@ -137,7 +137,7 @@ meshlib::Vertex meshlib::Edge::v1() const {
 	return m_v1;
 }
 
-meshlib::Vertex meshlib::Edge::split(float t) {
+std::vector<meshlib::Face> meshlib::Edge::neighboringFaces() const {
 	const auto allFaces = m_mesh->getNeighboringFaces(m_v0);
 	std::vector<Face> faces;
 	for (const auto& face : allFaces) {
@@ -147,6 +147,12 @@ meshlib::Vertex meshlib::Edge::split(float t) {
 			faces.push_back(face);
 		}
 	}
+
+	return faces;
+}
+
+meshlib::Vertex meshlib::Edge::split(float t) {
+	std::vector<Face> faces = neighboringFaces();
 
 	const auto newVertex = m_mesh->addVertex(m_v0.pos() + t * (m_v1.pos() - m_v0.pos()));
 

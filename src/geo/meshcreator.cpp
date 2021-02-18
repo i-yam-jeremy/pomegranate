@@ -2,6 +2,8 @@
 
 #include <math.h>
 #include <algorithm>
+#include <unordered_map>
+#include <earcut.hpp>
 
 using namespace glm;
 
@@ -173,6 +175,64 @@ std::vector<geo::MeshCreator::IntersectionPoint> geo::MeshCreator::findOutermost
 	return filteredPoints;
 }
 
+void geo::MeshCreator::dfsUtil(Vertex currentVertex, const std::vector<Edge>& edges, std::vector<Vertex>& currentComponent, std::unordered_map<size_t, bool>& verticesVisited) {
+	verticesVisited[currentVertex.hash()] = true;
+	currentComponent.push_back(currentVertex);
+	for (const auto& edge : edges) {
+		if (edge.v0() == currentVertex && !verticesVisited[edge.v1().hash()]) {
+			dfsUtil(edge.v1(), edges, currentComponent, verticesVisited);
+		}
+		else if (edge.v1() == currentVertex && !verticesVisited[edge.v0().hash()]) {
+			dfsUtil(edge.v0(), edges, currentComponent, verticesVisited);
+		}
+	}
+}
+
+void geo::MeshCreator::findConnectedComponents(std::vector<Edge> edges, std::vector<std::vector<Vertex>>& out) {
+	std::unordered_map<size_t, bool> verticesVisited;
+	std::unordered_map<size_t, std::shared_ptr<Vertex>> verticesByHash;
+	for (const auto& edge : edges) {
+		verticesVisited[edge.v0().hash()] = false;
+		verticesByHash[edge.v0().hash()] = std::make_shared<Vertex>(edge.v0());
+		verticesVisited[edge.v1().hash()] =  false;
+		verticesByHash[edge.v1().hash()] = std::make_shared<Vertex>(edge.v1());
+	}
+	
+	for (const auto& entry : verticesVisited) {
+		if (!entry.second) {
+			std::vector<Vertex> currentComponent;
+			dfsUtil(*(verticesByHash[entry.first]), edges, currentComponent, verticesVisited);
+			out.push_back(currentComponent);
+		}
+	}
+}
+
+mat3 createPlaneBasis(vec3 normal) {
+	auto u1 = normal;
+	auto offset = (abs(u1.x) < 0.001 && abs(u1.y) < 0.001) ? vec3(1, 0, 0) : vec3(0, 0, 1);
+	auto v2 = u1 + offset;
+	auto u2 = v2 - (dot(u1, v2) / dot(u1, u1)) * u1;
+	
+	auto e1 = normalize(u1);
+	auto e2 = normalize(u2);
+	auto e3 = cross(e1, e2);
+
+	mat3 m;
+
+	m[0][0] = e1.x;
+	m[0][1] = e1.y;
+	m[0][2] = e1.z;
+
+	m[1][0] = e2.x;
+	m[1][1] = e2.y;
+	m[1][2] = e2.z;
+
+	m[2][0] = e3.x;
+	m[2][1] = e3.y;
+	m[2][2] = e3.z;
+
+	return m;
+}
 
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
 	std::vector<Vertex> newVertices;
@@ -181,16 +241,21 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		newVertices.push_back(newVertex);
 	}
 
+	/*
+	1. Group intersection points by other face (possibly a multi-map or map of vectors)
+	2. Find all newly created vertices that intersect with the face
+	3. Add those vertices to the face in between the two vertices for the left edge, and the two vertices for the right edge, and there should only be four vertices per other face
+	*/
 	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
 	for (int i = 0; i < intersections.size(); i++) {
 		auto& p = intersections[i];
 		intersectionsByOtherFace[&p.other].push_back(i);
 	}
 
-	for (	auto& entry : intersectionsByOtherFace) {
-		Face face = *(entry.first);
+	for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
 		auto vertices = face.vertices();
-		auto refPoint = vertices[0];
+		auto& refPoint = vertices[0];
 		auto& newVertexIndices = entry.second;
 		std::sort(newVertexIndices.begin(), newVertexIndices.end(),
 			[=](int a, int b) {
@@ -200,37 +265,80 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 			});
 		for (auto index : newVertexIndices) {
 			auto newVertex = newVertices[index];
-			vertices.insert(vertices.begin() + 1, newVertex); // May need to change insertion order
+			vertices.insert(vertices.begin() + 1, newVertex);
 		}
 		face.update(vertices);
 	}
+
+	// FIXME fix weird insertion order of points at first branch point for one face
+
 	/*
-	1. Group intersection points by other face (possibly a multi-map or map of vectors)
-	2. Find all newly created vertices that intersect with the face
-	3. Add those vertices to the face at index 2 (in between the two vertices for the left edge, and the two vertices for the right edge, and there should only be four vertices per other face)
-	^ may have some issues with ordering of vertices to insert 
-
-	Remove: n-gon faces
-	4. Average the position of all the vertices of the face and add a new vertex at the center point
-	5. Add triangles connecting the center point to all vertices of the original face
-	6. Delete the original face
+	Remove small edges:
+	1. Merge by distance all vertices on these faces
 	*/
+	// TODO
 
-	/*for (int i = 0; i < intersections.size(); i++) {
-		auto& p = intersections[i];
-		const auto newVertex = newVertices[i];
-		const auto verts = p.other.vertices();
-		for (int j = 0; j < verts.size(); j++) {
-			std::vector<Vertex> v;
-			v.push_back(newVertex);
-			v.push_back(verts[j]);
-			v.push_back(verts[(j + 1) % verts.size()]);
-			mesh.addFace(v);
+	/*
+	Fill in holes:
+	1. Find edges with only one adjoining face
+	2. Group connected edges (edges sharing a vertex, or connected by a mutually shared edge)
+	3. Create a face from each group of edges
+	*/
+	std::vector<Edge> openEdges;
+	for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
+		for (auto edge : face.edges()) {
+			if (edge.neighboringFaces().size() == 1) {
+				openEdges.push_back(edge);
+			}
 		}
 	}
 
-	for (auto& p : intersections) {
-		mesh.deleteFace(p.other);
+	std::vector<std::vector<Vertex>> connectedComponents;
+	findConnectedComponents(openEdges, connectedComponents);
+
+	for (auto& group : connectedComponents) {
+		mesh.addFace(group);
+	}
+	/*
+	Replace n-gon faces:
+	1. Triangulate the face
+	2. Add triangles to the mesh
+	3. Delete the original face
+	*/
+	/*for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
+		const auto vertices = face.vertices();
+		using Coord = float;
+		using N = uint16_t;
+		using Point = std::pair<Coord, Coord>;
+		std::vector<Point> polygon;
+
+		auto estimatedNormal = normalize(cross(vertices[0].pos() - vertices[1].pos(), vertices[2].pos() - vertices[1].pos()));
+		auto planeBasis = createPlaneBasis(estimatedNormal);
+		auto inversePlaneBasis = inverse(planeBasis);
+		for (const auto& v : vertices) {
+			auto p = v.pos();
+			p -= estimatedNormal * dot(p, estimatedNormal);
+			p = inversePlaneBasis * p;
+			assert(abs(p.x) < 0.01);
+			Point point = std::make_pair(p.y, p.z);
+			polygon.push_back(point);
+		}
+
+		std::vector<std::vector<Point>> polygonWrapper;
+		polygonWrapper.push_back(polygon);
+		std::vector<N> indices = mapbox::earcut<N>(polygonWrapper);
+		std::cout << indices.size() << std::endl;
+		for (int i = 0; i < indices.size(); i += 3) {
+			std::vector<Vertex> verts;
+			verts.push_back(vertices[indices[i+0]]);
+			verts.push_back(vertices[indices[i+1]]);
+			verts.push_back(vertices[indices[i+2]]);
+			mesh.addFace(verts);
+		}
+
+		mesh.deleteFace(face);
 	}*/
 }
 

@@ -77,6 +77,7 @@ namespace meshlib {
 		size_t hash() const;
 		Vertex v0() const;
 		Vertex v1() const;
+		std::vector<Face> neighboringFaces() const;
 		Vertex split(float t);
 	private:
 		Mesh* m_mesh;
