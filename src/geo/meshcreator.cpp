@@ -207,7 +207,7 @@ void geo::MeshCreator::findConnectedComponents(std::vector<Edge> edges, std::vec
 	}
 }
 
-mat3 createPlaneBasis(vec3 normal) {
+mat3 geo::MeshCreator::createPlaneBasis(vec3 normal) {
 	auto u1 = normal;
 	auto offset = (abs(u1.x) < 0.001 && abs(u1.y) < 0.001) ? vec3(1, 0, 0) : vec3(0, 0, 1);
 	auto v2 = u1 + offset;

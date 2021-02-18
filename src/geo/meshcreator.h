@@ -39,6 +39,7 @@ namespace geo {
 		std::vector<IntersectionPoint> findOutermostIntersections(std::vector<IntersectionPoint>& points);
 		void dfsUtil(Vertex currentVertex, const std::vector<Edge>& edges, std::vector<Vertex>& currentComponent, std::unordered_map<size_t, bool>& verticesVisited);
 		void findConnectedComponents(std::vector<Edge> edges, std::vector<std::vector<Vertex>>& out);
+		mat3 createPlaneBasis(vec3 normal);
 		void createManifoldBranchHull(std::vector<IntersectionPoint> intersections);
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
