@@ -270,13 +270,40 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		face.update(vertices);
 	}
 
-	// FIXME fix weird insertion order of points at first branch point for one face
-
 	/*
 	Remove small edges:
-	1. Merge by distance all vertices on these faces
+	For each face,
+		for each vertex on the face,
+			if the current vertex is nearer than the minimum distance threshold to the next vertex then,
+				merge the two vertices
 	*/
-	// TODO
+	const float mergeDistThreshold = 0.01;
+	for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
+		auto vertices = face.vertices();
+		for (int i = 0; i < vertices.size(); i++) {
+			auto a = vertices[i];
+			auto b = vertices[(i + 1) % vertices.size()];
+			auto dist = distance(a.pos(), b.pos());
+			if (dist < mergeDistThreshold) {
+				vertices.erase(vertices.begin() + ((i + 1) % vertices.size()));
+				mesh.mergeVertices(a, b);
+			}
+		}
+	}
+
+	std::vector<Face*> toRemove;
+	for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
+		auto vertices = face.vertices();
+		if (vertices.size() < 3) {
+			mesh.deleteFace(face);
+			toRemove.push_back(entry.first);
+		}
+	}
+	for (auto& face : toRemove) {
+		intersectionsByOtherFace.erase(face);
+	}
 
 	/*
 	Fill in holes:
@@ -300,6 +327,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	for (auto& group : connectedComponents) {
 		mesh.addFace(group);
 	}
+
 	/*
 	Replace n-gon faces:
 	1. Triangulate the face
@@ -309,6 +337,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
 		const auto vertices = face.vertices();
+		if (vertices.size() <= 4) continue; // Don't triangulate quads or tris
 		using Coord = float;
 		using N = uint16_t;
 		using Point = std::pair<Coord, Coord>;
@@ -340,6 +369,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 
 	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
+		if (face.vertices().size() <= 4) continue; // Quads and tris aren't triangulated, so don't delete
 		mesh.deleteFace(face);
 	}
 }

@@ -31,6 +31,8 @@ namespace meshlib {
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 
+		void mergeVertices(Vertex& a, Vertex& b);
+
 		std::vector<Face> getNeighboringFaces(const Vertex& v);
 
 		void toOBJ(std::ostream& out);

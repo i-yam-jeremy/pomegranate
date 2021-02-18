@@ -61,6 +61,21 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 	}
 }
 
+void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
+	a.pos((a.pos() + b.pos()) / 2.0f);
+
+	auto& facesContainingB = vertices[getHandle(b)].faces;
+	for (auto& face : facesContainingB) {
+		auto& faceVertices = faces[face].vertices;
+		const auto& found = std::find(faceVertices.begin(), faceVertices.end(), getHandle(b));
+		if (found != faceVertices.end()) {
+			faceVertices.erase(found);
+		}
+	}
+
+	vertices.erase(getHandle(b));
+}
+
 std::vector<meshlib::Face> meshlib::Mesh::getNeighboringFaces(const Vertex& v) {
 	std::vector<Face> faces;
 
@@ -81,6 +96,7 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 	}
 
 	for (const auto& face : faces) {
+		if (face.second.vertices.size() < 3) continue;
 		out << "f ";
 		for (const auto& v : face.second.vertices) {
 			const auto vertexIndex = vertexIndices[v];
