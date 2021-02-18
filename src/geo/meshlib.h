@@ -88,7 +88,7 @@ namespace meshlib {
 		Face(Mesh* mesh, Handle handle) :
 			mesh(mesh),
 			handle(handle) {};
-
+		size_t hash() const;
 		std::vector<Vertex> vertices() const;
 		std::vector<Edge> edges() const;
 

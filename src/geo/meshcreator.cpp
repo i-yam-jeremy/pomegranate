@@ -1,6 +1,7 @@
 #include "meshcreator.h"
 
 #include <math.h>
+#include <algorithm>
 
 using namespace glm;
 
@@ -183,7 +184,42 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		newVertices.push_back(newVertex);
 	}
 
+	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
 	for (int i = 0; i < intersections.size(); i++) {
+		auto& p = intersections[i];
+		intersectionsByOtherFace[&p.other].push_back(i);
+	}
+
+	for (	auto& entry : intersectionsByOtherFace) {
+		Face face = *(entry.first);
+		auto vertices = face.vertices();
+		auto refPoint = vertices[0];
+		auto& newVertexIndices = entry.second;
+		std::sort(newVertexIndices.begin(), newVertexIndices.end(),
+			[=](int a, int b) {
+				float distA = distance(newVertices[a].pos(), refPoint.pos());
+				float distB = distance(newVertices[b].pos(), refPoint.pos());
+				return distA < distB;
+			});
+		for (auto index : newVertexIndices) {
+			auto newVertex = newVertices[index];
+			vertices.insert(vertices.begin() + 1, newVertex); // May need to change insertion order
+		}
+		face.update(vertices);
+	}
+	/*
+	1. Group intersection points by other face (possibly a multi-map or map of vectors)
+	2. Find all newly created vertices that intersect with the face
+	3. Add those vertices to the face at index 2 (in between the two vertices for the left edge, and the two vertices for the right edge, and there should only be four vertices per other face)
+	^ may have some issues with ordering of vertices to insert 
+
+	Remove: n-gon faces
+	4. Average the position of all the vertices of the face and add a new vertex at the center point
+	5. Add triangles connecting the center point to all vertices of the original face
+	6. Delete the original face
+	*/
+
+	/*for (int i = 0; i < intersections.size(); i++) {
 		auto& p = intersections[i];
 		const auto newVertex = newVertices[i];
 		const auto verts = p.other.vertices();
@@ -198,7 +234,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 
 	for (auto& p : intersections) {
 		mesh.deleteFace(p.other);
-	}
+	}*/
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
