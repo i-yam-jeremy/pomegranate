@@ -306,7 +306,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	2. Add triangles to the mesh
 	3. Delete the original face
 	*/
-	/*for (auto& entry : intersectionsByOtherFace) {
+	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
 		const auto vertices = face.vertices();
 		using Coord = float;
@@ -321,7 +321,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 			auto p = v.pos();
 			p -= estimatedNormal * dot(p, estimatedNormal);
 			p = inversePlaneBasis * p;
-			assert(abs(p.x) < 0.01);
+			//assert(abs(p.x) < 0.01);
 			Point point = std::make_pair(p.y, p.z);
 			polygon.push_back(point);
 		}
@@ -329,7 +329,6 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		std::vector<std::vector<Point>> polygonWrapper;
 		polygonWrapper.push_back(polygon);
 		std::vector<N> indices = mapbox::earcut<N>(polygonWrapper);
-		std::cout << indices.size() << std::endl;
 		for (int i = 0; i < indices.size(); i += 3) {
 			std::vector<Vertex> verts;
 			verts.push_back(vertices[indices[i+0]]);
@@ -337,9 +336,12 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 			verts.push_back(vertices[indices[i+2]]);
 			mesh.addFace(verts);
 		}
+	}
 
+	for (auto& entry : intersectionsByOtherFace) {
+		auto face = *(entry.first);
 		mesh.deleteFace(face);
-	}*/
+	}
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
