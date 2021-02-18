@@ -258,7 +258,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		auto& refPoint = vertices[0];
 		auto& newVertexIndices = entry.second;
 		std::sort(newVertexIndices.begin(), newVertexIndices.end(),
-			[=](int a, int b) {
+			[&](int a, int b) {
 				float distA = distance(newVertices[a].pos(), refPoint.pos());
 				float distB = distance(newVertices[b].pos(), refPoint.pos());
 				return distA < distB;
