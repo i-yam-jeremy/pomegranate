@@ -41,7 +41,7 @@ namespace geo {
 		void findConnectedComponents(std::vector<Edge> edges, std::vector<std::vector<Vertex>>& out);
 		mat3 createPlaneBasis(vec3 normal);
 		void mergeInIntersectionVertices(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices);
-		void fillAllMeshHoles();
+		void collapseAllMeshHoles();
 		void createManifoldBranchHull(std::vector<IntersectionPoint> intersections);
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);

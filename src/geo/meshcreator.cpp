@@ -14,7 +14,7 @@ void geo::MeshCreator::instance() {
 	}
 
 	// Fill all holes
-	fillAllMeshHoles();
+	collapseAllMeshHoles();
 }
 
 void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
@@ -286,7 +286,7 @@ void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint
 	}
 }
 
-void geo::MeshCreator::fillAllMeshHoles() {
+void geo::MeshCreator::collapseAllMeshHoles() {
 	std::vector<Edge> openEdges;
 	for (auto& face : mesh.getFaces()) {
 		for (auto& edge : face.edges()) {
