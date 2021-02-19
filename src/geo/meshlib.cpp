@@ -81,20 +81,29 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 	auto& facesContainingA = vertices[getHandle(a)].faces;
 	auto& facesContainingB = vertices[getHandle(b)].faces;
 	for (auto& face : facesContainingB) {
-		auto& faceVertices = faces[face].vertices;
-		for (int i = 0; i < faceVertices.size(); i++) {
-			if (faceVertices[i] == getHandle(b)) {
-				faceVertices[i] = getHandle(a);
+		auto& found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
+		if (found == facesContainingA.end()) { // Vertex a is not in the face, so replace b with a
+			facesContainingA.push_back(face);
+
+			auto& faceVertices = faces[face].vertices;
+			for (int i = 0; i < faceVertices.size(); i++) {
+				if (faceVertices[i] == getHandle(b)) {
+					faceVertices[i] = getHandle(a);
+				}
 			}
 		}
-		
-		auto& found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
-		if (found == facesContainingA.end()) {
-			facesContainingA.push_back(face);
+		else { // Vertex a is already on the face, so just remove b
+			auto& faceVertices = faces[face].vertices;
+			for (int i = 0; i < faceVertices.size(); i++) {
+				if (faceVertices[i] == getHandle(b)) {
+					faceVertices.erase(faceVertices.begin() + i);
+					i--;
+				}
+			}
 		}
 	}
 
-	vertices.erase(getHandle(b));
+	//vertices.erase(getHandle(b));
 }
 
 std::vector<meshlib::Face> meshlib::Mesh::getNeighboringFaces(const Vertex& v) {
