@@ -3,7 +3,6 @@
 #include <math.h>
 #include <algorithm>
 #include <unordered_map>
-#include <earcut.hpp>
 
 using namespace glm;
 
@@ -237,12 +236,13 @@ mat3 geo::MeshCreator::createPlaneBasis(vec3 normal) {
 	return m;
 }
 
-void geo::MeshCreator::joinFacesIntoNgons(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices, std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {
+void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices) {
 	/*
 	1. Group intersection points by other face (possibly a multi-map or map of vectors)
 	2. Find all newly created vertices that intersect with the face
 	3. Add those vertices to the face in between the two vertices for the left edge, and the two vertices for the right edge, and there should only be four vertices per other face
 	*/
+	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
 	for (int i = 0; i < intersections.size(); i++) {
 		auto& p = intersections[i];
 		intersectionsByOtherFace[&p.other].push_back(i);
@@ -286,77 +286,6 @@ void geo::MeshCreator::joinFacesIntoNgons(std::vector<IntersectionPoint>& inters
 	}
 }
 
-void geo::MeshCreator::mergeByDistance(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {
-	/*
-	Merge vertices to remove small edges / tris:
-	For each face,
-		for each vertex on the face,
-			if the current vertex is nearer than the minimum distance threshold to the next vertex then,
-				merge the two vertices
-	*/
-	const float mergeDistThreshold = 0.025;
-	for (auto& entry : intersectionsByOtherFace) {
-		auto face = *(entry.first);
-		auto vertices = face.vertices();
-		for (int i = 0; i < vertices.size(); i++) {
-			auto a = vertices[i];
-			auto b = vertices[(i + 1) % vertices.size()];
-			auto dist = distance(a.pos(), b.pos());
-			if (dist < mergeDistThreshold) {
-				vertices.erase(vertices.begin() + ((i + 1) % vertices.size()));
-				mesh.mergeVertices(a, b);
-			}
-		}
-	}
-
-	std::vector<Face*> toRemove;
-	for (auto& entry : intersectionsByOtherFace) {
-		auto face = *(entry.first);
-		auto vertices = face.vertices();
-		if (vertices.size() < 3) {
-			mesh.deleteFace(face);
-			toRemove.push_back(entry.first);
-		}
-	}
-	for (auto& face : toRemove) {
-		intersectionsByOtherFace.erase(face);
-	}
-}
-
-bool geo::MeshCreator::fillInHoles(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {
-	/*
-	Fill in holes:
-	1. Find edges with only one adjoining face
-	2. Group connected edges (edges sharing a vertex, or connected by a mutually shared edge)
-	3. Collapse hole into a single edge (unless the component is a single edge, then collapse into a point)
-	*/
-	std::vector<Edge> openEdges;
-	for (auto& entry : intersectionsByOtherFace) {
-		auto face = *(entry.first);
-		for (auto& edge : face.edges()) {
-			if (edge.neighboringFaces().size() == 1) {
-				openEdges.push_back(edge);
-			}
-		}
-	}
-
-	if (openEdges.size() == 0) return false;
-
-	std::vector<std::vector<Vertex>> connectedComponents;
-	findConnectedComponents(openEdges, connectedComponents);
-	if (connectedComponents.size() == 0) return false;
-
-	for (auto& group : connectedComponents) {
-		//mesh.addFace(group, lsystemOut->getSegmentTypes()[0]);
-		/*auto len = (group.size() == 2) ? 2 : group.size() - 1;
-		for (int i = 1; i < len; i++) {
-			mesh.mergeVertices(group[0], group[i]);
-		}*/
-	}
-
-	return true;
-}
-
 void geo::MeshCreator::fillAllMeshHoles() {
 	std::vector<Edge> openEdges;
 	for (auto& face : mesh.getFaces()) {
@@ -379,65 +308,6 @@ void geo::MeshCreator::fillAllMeshHoles() {
 	}
 }
 
-void geo::MeshCreator::triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {
-	/*
-	Replace n-gon faces:
-	1. Triangulate the faces
-	2. Add triangles to the mesh
-	3. Delete the original faces
-	*/
-	for (auto& entry : intersectionsByOtherFace) {
-		auto face = *(entry.first);
-		const auto vertices = face.vertices();
-		if (vertices.size() <= 3) continue; // Don't triangulate tris
-		using Coord = float;
-		using N = uint16_t;
-		using Point = std::pair<Coord, Coord>;
-		std::vector<Point> polygon;
-
-		auto estimatedNormal = normalize(cross(vertices[0].pos() - vertices[1].pos(), vertices[2].pos() - vertices[1].pos()));
-		auto planeBasis = createPlaneBasis(estimatedNormal);
-		auto inversePlaneBasis = inverse(planeBasis);
-		for (const auto& v : vertices) {
-			auto p = v.pos();
-			p -= estimatedNormal * dot(p, estimatedNormal);
-			p = inversePlaneBasis * p;
-			//assert(abs(p.x) < 0.01);
-			Point point = std::make_pair(p.y, p.z);
-			polygon.push_back(point);
-		}
-
-		std::vector<std::vector<Point>> polygonWrapper;
-		polygonWrapper.push_back(polygon);
-		std::vector<N> indices = mapbox::earcut<N>(polygonWrapper);
-		for (int i = 0; i < indices.size(); i += 3) {
-			std::vector<Vertex> verts;
-			verts.push_back(vertices[indices[i + 0]]);
-			verts.push_back(vertices[indices[i + 1]]);
-			verts.push_back(vertices[indices[i + 2]]);
-			auto tri = mesh.addFace(verts, face.type());
-
-			auto faceVertexUVOverrides = face.getUVOverriddenVertices();
-			for (auto& v1 : faceVertexUVOverrides) {
-				for (auto& v2 : verts) {
-					if (v1 == v2) {
-						vec2 uv;
-						if (face.getVertexUVOverride(v1, uv)) { // Should always be true, but has a catch just in case the vertex doesn't exist so it doesn't crash
-							tri.setVertexUVOverride(v1, uv);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	for (auto& entry : intersectionsByOtherFace) {
-		auto face = *(entry.first);
-		if (face.vertices().size() <= 3) continue; // Tris aren't triangulated, so don't delete
-		mesh.deleteFace(face);
-	}
-}
-
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
 	std::vector<Vertex> newVertices;
 	for (auto& p : intersections) {
@@ -445,16 +315,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 		newVertices.push_back(newVertex);
 	}
 
-	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
-	
-	joinFacesIntoNgons(intersections, newVertices, intersectionsByOtherFace);
-	/*mergeByDistance(intersectionsByOtherFace);
-
-	while (fillInHoles(intersectionsByOtherFace)) {
-
-	}*/
-
-	//triangulateFaces(intersectionsByOtherFace);
+	mergeInIntersectionVertices(intersections, newVertices);
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {

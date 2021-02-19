@@ -40,11 +40,8 @@ namespace geo {
 		void dfsUtil(Vertex currentVertex, const std::vector<Edge>& edges, std::vector<Vertex>& currentComponent, std::unordered_map<size_t, bool>& verticesVisited);
 		void findConnectedComponents(std::vector<Edge> edges, std::vector<std::vector<Vertex>>& out);
 		mat3 createPlaneBasis(vec3 normal);
-		void joinFacesIntoNgons(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices, std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
-		void mergeByDistance(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
-		bool fillInHoles(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
+		void mergeInIntersectionVertices(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices);
 		void fillAllMeshHoles();
-		void triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
 		void createManifoldBranchHull(std::vector<IntersectionPoint> intersections);
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
