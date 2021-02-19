@@ -21,8 +21,20 @@ void meshlib::Mesh::deleteFace(Face& f) {
 	faces.erase(getHandle(f));
 }
 
+bool meshlib::Mesh::isVertexValid(const Vertex& v) {
+	return vertices.find(getHandle(v)) != vertices.end();
+}
+
 size_t meshlib::Mesh::getVertexCount() const {
 	return vertices.size();
+}
+
+std::vector<meshlib::Face> meshlib::Mesh::getFaces() {
+	std::vector<Face> out;
+	for (auto& entry : faces) {
+		out.push_back(Face(this, entry.first));
+	}
+	return out;
 }
 
 vec3 meshlib::Mesh::getVertexPosition(const Vertex& v) {
@@ -207,6 +219,10 @@ vec2 meshlib::Vertex::uv() const {
 
 void meshlib::Vertex::uv(vec2 tx) {
 	mesh->updateVertexUV(*this, tx);
+}
+
+bool meshlib::Vertex::isValid() const {
+	return mesh->isVertexValid(*this);
 }
 
 bool meshlib::Edge::operator==(const Edge& other) const {

@@ -13,6 +13,9 @@ void geo::MeshCreator::instance() {
 		const lsystem::OutputSegment segment = *segmentPtr;
 		instanceSegment(segment, mc);
 	}
+
+	// Fill all holes
+	fillAllMeshHoles();
 }
 
 void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
@@ -344,7 +347,7 @@ bool geo::MeshCreator::fillInHoles(std::unordered_map<Face*, std::vector<int>>& 
 	if (connectedComponents.size() == 0) return false;
 
 	for (auto& group : connectedComponents) {
-		mesh.addFace(group, lsystemOut->getSegmentTypes()[0]);
+		//mesh.addFace(group, lsystemOut->getSegmentTypes()[0]);
 		/*auto len = (group.size() == 2) ? 2 : group.size() - 1;
 		for (int i = 1; i < len; i++) {
 			mesh.mergeVertices(group[0], group[i]);
@@ -352,6 +355,28 @@ bool geo::MeshCreator::fillInHoles(std::unordered_map<Face*, std::vector<int>>& 
 	}
 
 	return true;
+}
+
+void geo::MeshCreator::fillAllMeshHoles() {
+	std::vector<Edge> openEdges;
+	for (auto& face : mesh.getFaces()) {
+		for (auto& edge : face.edges()) {
+			if (edge.neighboringFaces().size() == 1) {
+				openEdges.push_back(edge);
+			}
+		}
+	}
+
+	std::vector<std::vector<Vertex>> connectedComponents;
+	findConnectedComponents(openEdges, connectedComponents);
+
+	for (auto& group : connectedComponents) {
+		//mesh.addFace(group, lsystemOut->getSegmentTypes()[0]);
+		auto len = (group.size() == 2) ? 2 : group.size() - 1;
+		for (int i = 1; i < len; i++) {
+			mesh.mergeVertices(group[0], group[i]);
+		}
+	}
 }
 
 void geo::MeshCreator::triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {

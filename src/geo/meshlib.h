@@ -25,7 +25,9 @@ namespace meshlib {
 
 		void deleteFace(Face& f);
 
+		bool isVertexValid(const Vertex& v);
 		size_t getVertexCount() const;
+		std::vector<Face> getFaces();
 
 		vec3 getVertexPosition(const Vertex& v);
 		void updateVertexPosition(Vertex& v, vec3 pos);
@@ -77,6 +79,7 @@ namespace meshlib {
 		void pos(vec3 p);
 		vec2 uv() const;
 		void uv(vec2 tx);
+		bool isValid() const;
 		friend Handle Mesh::getHandle(const Vertex& v);
 	private:
 		Mesh* mesh;
