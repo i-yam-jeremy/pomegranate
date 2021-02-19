@@ -35,6 +35,8 @@ namespace meshlib {
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 		std::string getFaceType(const Face& f);
+		std::vector<Vertex> getFaceUVOverriddenVertices(const Face& f);
+		bool getFaceVertexUVOverride(const Face& f, const Vertex& v, vec2& result);
 		void setFaceVertexUVOverride(Face& f, Vertex& v, vec2 uv);
 
 		void mergeVertices(Vertex& a, Vertex& b);
@@ -107,6 +109,8 @@ namespace meshlib {
 		std::vector<Vertex> vertices() const;
 		std::vector<Edge> edges() const;
 		std::string type() const;
+		std::vector<Vertex> getUVOverriddenVertices() const;
+		bool getVertexUVOverride(const Vertex& v, vec2& result) const;
 		void setVertexUVOverride(Vertex& v, vec2 uv);
 
 		void update(std::vector<Vertex>& verts);

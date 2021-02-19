@@ -74,6 +74,23 @@ std::string meshlib::Mesh::getFaceType(const Face& f) {
 	return faces[getHandle(f)].type;
 }
 
+std::vector<meshlib::Vertex> meshlib::Mesh::getFaceUVOverriddenVertices(const Face& f) {
+	std::vector<Vertex> verts;
+	for (const auto& entry : faces[getHandle(f)].vertexUVOverrides) {
+		verts.push_back(Vertex(this, entry.first));
+	}
+	return verts;
+}
+
+bool meshlib::Mesh::getFaceVertexUVOverride(const Face& f, const Vertex& v, vec2& result) {
+	auto& uvOverrides = faces[getHandle(f)].vertexUVOverrides;
+	auto& found = uvOverrides.find(getHandle(v));
+	if (found == uvOverrides.end()) return false;
+
+	result = found->second;
+	return true;
+}
+
 void meshlib::Mesh::setFaceVertexUVOverride(Face& f, Vertex& v, vec2 uv) {
 	faces[getHandle(f)].vertexUVOverrides[getHandle(v)] = uv;
 }
@@ -278,6 +295,14 @@ std::vector<meshlib::Edge> meshlib::Face::edges() const {
 
 std::string meshlib::Face::type() const {
 	return mesh->getFaceType(*this);
+}
+
+std::vector<meshlib::Vertex> meshlib::Face::getUVOverriddenVertices() const {
+	return mesh->getFaceUVOverriddenVertices(*this);
+}
+
+bool meshlib::Face::getVertexUVOverride(const Vertex& v, vec2& result) const {
+	return mesh->getFaceVertexUVOverride(*this, v, result);
 }
 
 void meshlib::Face::setVertexUVOverride(Vertex& v, vec2 uv) {
