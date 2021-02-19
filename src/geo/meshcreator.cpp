@@ -16,7 +16,7 @@ void geo::MeshCreator::instance() {
 }
 
 void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
-	createCylinder(segment, 8, 4, mc);
+	createCylinder(segment, 16, 4, mc);
 }
 
 bool geo::MeshCreator::isLastChild(const lsystem::OutputSegment& child, MeshContext& mc) {
@@ -258,7 +258,10 @@ void geo::MeshCreator::joinFacesIntoNgons(std::vector<IntersectionPoint>& inters
 			});
 		for (auto index : newVertexIndices) {
 			auto& newVertex = newVertices[index];
+			if (!newVertex.isValid()) continue;
+			// TODO ensure vertex is valid and hasn't already been merged with something else
 
+			mesh.mergeVertices(refPoint, newVertex);
 			/*
 			UV override calculation:
 			1. Find two closest vertices already on face
@@ -267,14 +270,14 @@ void geo::MeshCreator::joinFacesIntoNgons(std::vector<IntersectionPoint>& inters
 			(this is not perfect because it's possible the new point extends further than the other points or is far away from colinear to both points, but it should be good enough)
 			(could also check distance from line between two closest points, the compute weighted average, then find the distance from the line this new vertex is, then go that distance in texture space on the line perpendicular to the two vertices UV coords)
 			*/
-			auto& v1 = vertices[0];
+			/*auto& v1 = vertices[0];
 			auto d1 = distance(v1.pos(), newVertex.pos());
 			auto& v2 = vertices[2];
 			auto d2 = distance(v2.pos(), newVertex.pos());
 			vec2 uv = (d1*v1.uv() + d2*v2.uv()) / (d1+d2);
 
 			vertices.insert(vertices.begin() + 1, newVertex);
-			face.setVertexUVOverride(newVertex, uv);
+			face.setVertexUVOverride(newVertex, uv);*/
 		}
 		face.update(vertices);
 	}
@@ -288,7 +291,7 @@ void geo::MeshCreator::mergeByDistance(std::unordered_map<Face*, std::vector<int
 			if the current vertex is nearer than the minimum distance threshold to the next vertex then,
 				merge the two vertices
 	*/
-	const float mergeDistThreshold = 0.05;
+	const float mergeDistThreshold = 0.025;
 	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
 		auto vertices = face.vertices();
@@ -420,13 +423,13 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
 	
 	joinFacesIntoNgons(intersections, newVertices, intersectionsByOtherFace);
-	mergeByDistance(intersectionsByOtherFace);
+	/*mergeByDistance(intersectionsByOtherFace);
 
 	while (fillInHoles(intersectionsByOtherFace)) {
 
-	}
+	}*/
 
-	triangulateFaces(intersectionsByOtherFace);
+	//triangulateFaces(intersectionsByOtherFace);
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
