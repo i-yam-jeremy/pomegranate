@@ -75,14 +75,22 @@ std::string meshlib::Mesh::getFaceType(const Face& f) {
 }
 
 void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
+	if (a == b) return;
 	a.pos((a.pos() + b.pos()) / 2.0f);
 
+	auto& facesContainingA = vertices[getHandle(a)].faces;
 	auto& facesContainingB = vertices[getHandle(b)].faces;
 	for (auto& face : facesContainingB) {
 		auto& faceVertices = faces[face].vertices;
-		const auto& found = std::find(faceVertices.begin(), faceVertices.end(), getHandle(b));
-		if (found != faceVertices.end()) {
-			faceVertices.erase(found);
+		for (int i = 0; i < faceVertices.size(); i++) {
+			if (faceVertices[i] == getHandle(b)) {
+				faceVertices[i] = getHandle(a);
+			}
+		}
+		
+		auto& found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
+		if (found == facesContainingA.end()) {
+			facesContainingA.push_back(face);
 		}
 	}
 
