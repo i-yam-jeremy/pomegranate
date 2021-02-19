@@ -257,8 +257,24 @@ void geo::MeshCreator::joinFacesIntoNgons(std::vector<IntersectionPoint>& inters
 				return distA < distB;
 			});
 		for (auto index : newVertexIndices) {
-			auto newVertex = newVertices[index];
+			auto& newVertex = newVertices[index];
+
+			/*
+			UV override calculation:
+			1. Find two closest vertices already on face
+			2. Get UVs from points (check if it has an overridden UV, if so use that, otherwise just use the base UV)
+			3. Weighted average of the two UVs by distances
+			(this is not perfect because it's possible the new point extends further than the other points or is far away from colinear to both points, but it should be good enough)
+			(could also check distance from line between two closest points, the compute weighted average, then find the distance from the line this new vertex is, then go that distance in texture space on the line perpendicular to the two vertices UV coords)
+			*/
+			auto& v1 = vertices[0];
+			auto d1 = distance(v1.pos(), newVertex.pos());
+			auto& v2 = vertices[2];
+			auto d2 = distance(v2.pos(), newVertex.pos());
+			vec2 uv = (d1*v1.uv() + d2*v2.uv()) / (d1+d2);
+
 			vertices.insert(vertices.begin() + 1, newVertex);
+			face.setVertexUVOverride(newVertex, uv);
 		}
 		face.update(vertices);
 	}
@@ -272,7 +288,7 @@ void geo::MeshCreator::mergeByDistance(std::unordered_map<Face*, std::vector<int
 			if the current vertex is nearer than the minimum distance threshold to the next vertex then,
 				merge the two vertices
 	*/
-	const float mergeDistThreshold = 0.025;
+	const float mergeDistThreshold = 0.05;
 	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
 		auto vertices = face.vertices();
@@ -335,7 +351,7 @@ bool geo::MeshCreator::fillInHoles(std::unordered_map<Face*, std::vector<int>>& 
 	return true;
 }
 
-void geo::MeshCreator::triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace, std::vector<Face>& triangles) {
+void geo::MeshCreator::triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace) {
 	/*
 	Replace n-gon faces:
 	1. Triangulate the faces
@@ -371,7 +387,19 @@ void geo::MeshCreator::triangulateFaces(std::unordered_map<Face*, std::vector<in
 			verts.push_back(vertices[indices[i + 0]]);
 			verts.push_back(vertices[indices[i + 1]]);
 			verts.push_back(vertices[indices[i + 2]]);
-			triangles.push_back(mesh.addFace(verts, face.type()));
+			auto tri = mesh.addFace(verts, face.type());
+
+			auto faceVertexUVOverrides = face.getUVOverriddenVertices();
+			for (auto& v1 : faceVertexUVOverrides) {
+				for (auto& v2 : verts) {
+					if (v1 == v2) {
+						vec2 uv;
+						if (face.getVertexUVOverride(v1, uv)) { // Should always be true, but has a catch just in case the vertex doesn't exist so it doesn't crash
+							tri.setVertexUVOverride(v1, uv);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -398,8 +426,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 
 	}
 
-	std::vector<Face> triangles;
-	triangulateFaces(intersectionsByOtherFace, triangles);
+	triangulateFaces(intersectionsByOtherFace);
 }
 
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {

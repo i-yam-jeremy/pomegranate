@@ -43,7 +43,7 @@ namespace geo {
 		void joinFacesIntoNgons(std::vector<IntersectionPoint>& intersections, std::vector<Vertex>& newVertices, std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
 		void mergeByDistance(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
 		bool fillInHoles(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
-		void triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace, std::vector<Face>& triangles);
+		void triangulateFaces(std::unordered_map<Face*, std::vector<int>>& intersectionsByOtherFace);
 		void createManifoldBranchHull(std::vector<IntersectionPoint> intersections);
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
