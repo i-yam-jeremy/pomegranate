@@ -103,7 +103,7 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 		}
 	}
 
-	//vertices.erase(getHandle(b));
+	vertices.erase(getHandle(b));
 }
 
 std::vector<meshlib::Face> meshlib::Mesh::getNeighboringFaces(const Vertex& v) {
