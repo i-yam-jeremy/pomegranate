@@ -74,6 +74,10 @@ std::string meshlib::Mesh::getFaceType(const Face& f) {
 	return faces[getHandle(f)].type;
 }
 
+void meshlib::Mesh::setFaceVertexUVOverride(Face& f, Vertex& v, vec2 uv) {
+	faces[getHandle(f)].vertexUVOverrides[getHandle(v)] = uv;
+}
+
 void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 	if (a == b) return;
 	a.pos((a.pos() + b.pos()) / 2.0f);
@@ -126,16 +130,25 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 		currentVertexIndex++;
 	}
 
+	auto currentUVCoordIndex = currentVertexIndex;
+
 	for (const auto& type : segmentTypes) {
 		out << "g " << type << std::endl;
 		out << "usemtl " << type << std::endl;
 		for (const auto& face : faces) {
 			if (face.second.vertices.size() < 3) continue;
 			if (face.second.type != type) continue;
+			std::unordered_map<Handle, size_t> uvOverrideIndices;
+			for (auto& entry : face.second.vertexUVOverrides) {
+				uvOverrideIndices[entry.first] = currentUVCoordIndex;
+				out << "vt " << entry.second.x << " " << entry.second.y << std::endl;
+				currentUVCoordIndex++;
+			}
 			out << "f ";
 			for (const auto& v : face.second.vertices) {
 				const auto vertexIndex = vertexIndices[v];
-				const auto uvIndex = vertexIndex;
+				auto& found = uvOverrideIndices.find(v);
+				const auto uvIndex = (found != uvOverrideIndices.end()) ? found->second : vertexIndex;
 				out << vertexIndex << "/" << uvIndex << " ";
 			}
 			out << std::endl;
@@ -265,6 +278,10 @@ std::vector<meshlib::Edge> meshlib::Face::edges() const {
 
 std::string meshlib::Face::type() const {
 	return mesh->getFaceType(*this);
+}
+
+void meshlib::Face::setVertexUVOverride(Vertex& v, vec2 uv) {
+	mesh->setFaceVertexUVOverride(*this, v, uv);
 }
 
 void meshlib::Face::update(std::vector<Vertex>& verts) {

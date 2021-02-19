@@ -35,6 +35,7 @@ namespace meshlib {
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 		std::string getFaceType(const Face& f);
+		void setFaceVertexUVOverride(Face& f, Vertex& v, vec2 uv);
 
 		void mergeVertices(Vertex& a, Vertex& b);
 
@@ -55,6 +56,7 @@ namespace meshlib {
 		};
 		struct FaceData {
 			std::vector<Handle> vertices;
+			std::unordered_map<Handle, vec2> vertexUVOverrides;
 			std::string type;
 		};
 		std::unordered_map<Handle, VertexData> vertices;
@@ -105,6 +107,7 @@ namespace meshlib {
 		std::vector<Vertex> vertices() const;
 		std::vector<Edge> edges() const;
 		std::string type() const;
+		void setVertexUVOverride(Vertex& v, vec2 uv);
 
 		void update(std::vector<Vertex>& verts);
 
