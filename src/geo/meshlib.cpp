@@ -7,9 +7,10 @@ meshlib::Vertex meshlib::Mesh::addVertex(vec3 p) {
 	return Vertex(this, handle);
 }
 
-meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts, std::string type) {
+meshlib::Face meshlib::Mesh::addFace(std::vector<Vertex>& verts, std::string type, bool isLeaf) {
 	FaceData data;
 	data.type = type;
+	data.isLeaf = isLeaf;
 	size_t handle = getNextHandle();
 	faces[handle] = data;
 	auto f = Face(this, handle);
@@ -84,6 +85,10 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 
 std::string meshlib::Mesh::getFaceType(const Face& f) {
 	return faces[getHandle(f)].type;
+}
+
+bool meshlib::Mesh::getFaceIsLeaf(const Face& f) {
+	return faces[getHandle(f)].isLeaf;
 }
 
 std::vector<meshlib::Vertex> meshlib::Mesh::getFaceUVOverriddenVertices(const Face& f) {
@@ -311,6 +316,10 @@ std::vector<meshlib::Edge> meshlib::Face::edges() const {
 
 std::string meshlib::Face::type() const {
 	return mesh->getFaceType(*this);
+}
+
+bool meshlib::Face::isLeaf() const {
+	return mesh->getFaceIsLeaf(*this);
 }
 
 std::vector<meshlib::Vertex> meshlib::Face::getUVOverriddenVertices() const {

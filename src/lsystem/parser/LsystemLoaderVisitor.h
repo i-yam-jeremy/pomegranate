@@ -79,6 +79,10 @@ namespace lsystem {
 			The current parent rule. Used to tag output segments with geometry types.
 		*/
 		std::string currentParentRule = "";
+		/*
+			Whether the current parent rule produces a leaf (as opposed to a cylindrical segment).
+		*/
+		bool currentParentRuleIsLeaf = false;
 
 };
 

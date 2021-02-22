@@ -48,6 +48,11 @@ namespace geo {
 		void createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc);
 		void createCircle(std::vector<Vertex>& vertices, glm::mat4 mat, glm::vec3 translation, float interpFactor, int pointCount, float taperScale);
 
+		float getEndTaperScale(const lsystem::OutputSegment& segment);
+		int getNonLeafChildCount(const lsystem::OutputSegment& segment);
+
+		void createLeafCard(const lsystem::OutputSegment& segment, MeshContext& mc);
+
 		Mesh& mesh;
 		std::shared_ptr<lsystem::Output> lsystemOut;
 	};

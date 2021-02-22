@@ -1,6 +1,6 @@
 grammar Lsystem;		
 lsystem: 'generations' '=' generations=INT ',' 'angle' '=' angle=numWithDev ',' 'init' '=' initiator=commands ',' 'rules' ':' lrule (',' lrule)*;
-lrule: name=ID '=' body=commands;
+lrule: name=ID ('[' isleaf='leaf' ']')? '=' body=commands;
 commands: (sym | subruleSym | scaleLength)*;
 sym: ( LEFT | RIGHT | ROLL_CW | ROLL_CCW | PITCH_UP | PITCH_DOWN | PUSH | POP | SCALE_ALL ) ( '(' arg1=numWithDev ')' )?;
 subruleSym: ID | 'f';

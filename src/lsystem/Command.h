@@ -30,19 +30,20 @@ namespace lsystem {
 	*/
 	class Command {
 	public:
-		Command(std::string value, CommandType type, std::string parentRuleType) :
+		Command(std::string value, CommandType type, std::string parentRuleType, bool isLeaf) :
 			value(value),
 			type(type),
-			parentRuleType(parentRuleType) {}
+			parentRuleType(parentRuleType),
+			isLeaf(isLeaf) {};
 		Command(std::string value, CommandType type) :
 			value(value),
 			type(type),
-			parentRuleType("") {}
+			parentRuleType("") {};
 		Command(std::string value, CommandType type, std::shared_ptr<Value> dataValue) :
 			value(value),
 			type(type),
 			parentRuleType(""),
-			dataValue(dataValue) {}
+			dataValue(dataValue) {};
 
 		/*
 			The text value of this command.
@@ -57,6 +58,10 @@ namespace lsystem {
 			Used to label output segments with the correct geometry type.
 		*/
 		std::string parentRuleType;
+		/*
+			Whether this command should produce a leaf piece of geometry (as opposed to a cylindrical segment).
+		*/
+		bool isLeaf = false;
 		/*
 			The first float argument to this command.
 		*/

@@ -13,12 +13,16 @@ void geo::MeshCreator::instance() {
 		instanceSegment(segment, mc);
 	}
 
-	// Fill all holes
 	collapseAllMeshHoles();
 }
 
 void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
-	createCylinder(segment, 16, 4, mc);
+	if (segment.isLeaf) {
+		createLeafCard(segment, mc);
+	}
+	else {
+		createCylinder(segment, 16, 4, mc);
+	}
 }
 
 bool geo::MeshCreator::isLastChild(const lsystem::OutputSegment& child, MeshContext& mc) {
@@ -289,6 +293,7 @@ void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint
 void geo::MeshCreator::collapseAllMeshHoles() {
 	std::vector<Edge> openEdges;
 	for (auto& face : mesh.getFaces()) {
+		if (face.isLeaf()) continue;
 		for (auto& edge : face.edges()) {
 			if (edge.neighboringFaces().size() == 1) {
 				openEdges.push_back(edge);
@@ -300,7 +305,6 @@ void geo::MeshCreator::collapseAllMeshHoles() {
 	findConnectedComponents(openEdges, connectedComponents);
 
 	for (auto& group : connectedComponents) {
-		//mesh.addFace(group, lsystemOut->getSegmentTypes()[0]);
 		auto len = (group.size() == 2) ? 2 : group.size() - 1;
 		for (int i = 1; i < len; i++) {
 			mesh.mergeVertices(group[0], group[i]);
@@ -321,6 +325,7 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc) {
 	std::vector<Bridge> bridges;
 	for (const auto& child : parent->children) {
+		if (child->isLeaf) continue;
 		Bridge bridge;
 		bridgeEdgeLoop(
 			           mc.getSegment(parent->id).endVertices,
@@ -344,8 +349,8 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 	createManifoldBranchHull(intersectionPoints);
 }
 
-float getEndTaperScale(const lsystem::OutputSegment& segment) {
-	if (segment.children.size() == 0) {
+float geo::MeshCreator::getEndTaperScale(const lsystem::OutputSegment& segment) {
+	if (getNonLeafChildCount(segment) == 0) {
 		return 0;
 	}
 
@@ -405,3 +410,31 @@ void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec
 		vertices.push_back(v);
 	}
 }
+
+int geo::MeshCreator::getNonLeafChildCount(const lsystem::OutputSegment& segment) {
+	int size = 0;
+	for (const auto& child : segment.children) {
+		if (child->isLeaf) continue;
+		size++;
+	}
+	return size;
+}
+
+void geo::MeshCreator::createLeafCard(const lsystem::OutputSegment& segment, MeshContext& mc) {
+	std::vector<vec3> localPositions = {
+		vec3(0, 0, 0),
+		vec3(1, 0, 0),
+		vec3(1, 1, 0),
+		vec3(0, 1, 0)
+	};
+	
+	std::vector<Vertex> verts;
+	for (const auto& p : localPositions) {
+		auto v = mesh.addVertex(vec3(vec4(p, 1) * segment.mat) + segment.translation);
+		v.uv(vec2(p.x, p.y));
+		verts.push_back(v);
+	}
+
+	mesh.addFace(verts, segment.type, true);
+}
+

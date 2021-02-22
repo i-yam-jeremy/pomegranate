@@ -21,7 +21,7 @@ namespace meshlib {
 		Mesh(std::vector<std::string> segmentTypes) :
 			segmentTypes(segmentTypes) {};
 		Vertex addVertex(vec3 p);
-		Face addFace(std::vector<Vertex>& verts, std::string type);
+		Face addFace(std::vector<Vertex>& verts, std::string type, bool isLeaf=false);
 
 		void deleteFace(Face& f);
 
@@ -37,6 +37,7 @@ namespace meshlib {
 		std::vector<Vertex> getFaceVertices(const Face& f);
 		void updateFaceVertices(Face& f, std::vector<Vertex>& verts);
 		std::string getFaceType(const Face& f);
+		bool getFaceIsLeaf(const Face& f);
 		std::vector<Vertex> getFaceUVOverriddenVertices(const Face& f);
 		bool getFaceVertexUVOverride(const Face& f, const Vertex& v, vec2& result);
 		void setFaceVertexUVOverride(Face& f, Vertex& v, vec2 uv);
@@ -62,6 +63,7 @@ namespace meshlib {
 			std::vector<Handle> vertices;
 			std::unordered_map<Handle, vec2> vertexUVOverrides;
 			std::string type;
+			bool isLeaf;
 		};
 		std::unordered_map<Handle, VertexData> vertices;
 		std::unordered_map<Handle, FaceData> faces;
@@ -112,6 +114,7 @@ namespace meshlib {
 		std::vector<Vertex> vertices() const;
 		std::vector<Edge> edges() const;
 		std::string type() const;
+		bool isLeaf() const;
 		std::vector<Vertex> getUVOverriddenVertices() const;
 		bool getVertexUVOverride(const Vertex& v, vec2& result) const;
 		void setVertexUVOverride(Vertex& v, vec2 uv);

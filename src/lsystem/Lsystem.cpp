@@ -129,7 +129,7 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 				break;
 			}
 			auto& parent = currentState.segment;
-			auto newSegment = std::make_shared<OutputSegment>(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length, parent);
+			auto newSegment = std::make_shared<OutputSegment>(cmd.parentRuleType, currentState.mat, currentState.translation, currentState.length, parent, cmd.isLeaf);
 			if (parent != nullptr) {
 				parent->children.push_back(newSegment);
 			}
