@@ -382,6 +382,13 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
+	
+	if (segment.children.size() == 0) { // If end taper scale is zero, then merge vertices to not have an open hole
+		for (int i = 1; i < vertices.size(); i++) {
+			mesh.mergeVertices(vertices[0], vertices[i]);
+		}
+	}
+
 	mc.setSegment(segment.id, Segment(startVertices, vertices));
 	if (isLastChild(segment, mc)) {
 		createBranchTopology(segment.parent, mc);
