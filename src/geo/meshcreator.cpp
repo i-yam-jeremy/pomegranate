@@ -344,18 +344,34 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 	createManifoldBranchHull(intersectionPoints);
 }
 
+float getEndTaperScale(const lsystem::OutputSegment& segment) {
+	if (segment.children.size() == 0) {
+		return 0;
+	}
+
+	auto lastChild = segment.children[segment.children.size() - 1];
+	vec3 childP = vec4(0, 1, 0, 0) * lastChild->mat;
+	float childScale = distance(childP, vec3(0));
+
+	vec3 segmentP = vec4(0, 1, 0, 0) * segment.mat;
+	float segmentScale = distance(segmentP, vec3(0));
+	
+	return childScale / segmentScale;
+}
+
 void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
 	std::vector<Vertex> vertices;
 	if (segment.parent != nullptr && segment.parent->children.size() == 1) {
 		vertices = std::vector<Vertex>(mc.getSegment(segment.parent->id).endVertices);
 	}
 	else {
-		createCircle(vertices, segment.mat, segment.translation, 0, pointCount);
+		createCircle(vertices, segment.mat, segment.translation, 0, pointCount, 1.0f);
 	}
 	auto startVertices = std::vector<Vertex>(vertices);
+	const float endTaperScale = getEndTaperScale(segment);
 	for (int j = 0; j <= rings; j++) {
 		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
-		createCircle(vertices, segment.mat, segment.translation, interpFactor, pointCount);
+		createCircle(vertices, segment.mat, segment.translation, interpFactor, pointCount, 1.0f - interpFactor*(1.0f - endTaperScale));
 		for (int i = 0; i < pointCount; i++) {
 			std::vector<Vertex> faceVertices;
 			faceVertices.push_back(vertices[i]);
@@ -372,9 +388,9 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	}
 }
 
-void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount) {
+void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount, float taperScale) {
 	for (int i = 0; i < pointCount; i++) {
-		vec3 circleOffset = vec3(interpFactor, 0.2*sin(i * 2.0f * M_PI / pointCount), 0.2*cos(i * 2.0f * M_PI / pointCount));
+		vec3 circleOffset = vec3(interpFactor, 0.2*taperScale*sin(i * 2.0f * M_PI / pointCount), 0.2*taperScale*cos(i * 2.0f * M_PI / pointCount));
 		vec3 p = vec4(circleOffset, 1) * mat;
 		p += translation;
 		auto v = mesh.addVertex(p);
