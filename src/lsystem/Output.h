@@ -19,14 +19,17 @@ namespace lsystem {
 			@param type The name of the geometry type of this segment.
 			@param mat The transform matrix.
 			@param length The length of this segment.
+			@param isLeaf Whether this segment is a leaf (as opposed to a cylindrical segment).
+			@param isLeafable Whether this segment will auto-add leaves if it has no children.
 		*/
-		OutputSegment(std::string type, mat4 mat, vec3 translation, float length, std::shared_ptr<OutputSegment> parent, bool isLeaf) :
+		OutputSegment(std::string type, mat4 mat, vec3 translation, float length, std::shared_ptr<OutputSegment> parent, bool isLeaf, bool isLeafable) :
 			type(type),
 			mat(mat),
 			translation(translation),
 		    length(length),
 			parent(parent),
-			isLeaf(isLeaf) {
+			isLeaf(isLeaf),
+			isLeafable(isLeafable) {
 			id = currentSegmentId++;
 		}
 
@@ -54,6 +57,10 @@ namespace lsystem {
 			Whether this segment should produce a leaf piece of geometry (as opposed to a cylindrical segment).
 		*/
 		bool isLeaf = false;
+		/*
+			Whether this segment will auto-add leaves if it has no children.
+		*/
+		bool isLeafable = false;
 		/*
 			The parent of this segment. If this is the root node, then the value is nullptr.
 		*/

@@ -83,6 +83,10 @@ namespace lsystem {
 			Whether the current parent rule produces a leaf (as opposed to a cylindrical segment).
 		*/
 		bool currentParentRuleIsLeaf = false;
+		/*
+			Whether the current parent rule is leafable (will auto-add leaves if a segment of the type has no children).
+		*/
+		bool currentParentRuleIsLeafable = false;
 
 };
 

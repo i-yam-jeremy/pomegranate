@@ -16,10 +16,12 @@ antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* 
 antlrcpp::Any LsystemLoaderVisitor::visitLrule(LsystemParser::LruleContext* ctx) {
 	std::string name = ctx->name->getText();
 	bool isLeaf = ctx->isleaf != nullptr;
+	bool isLeafable = ctx->isleafable != nullptr;
 	currentParentRule = name;
 	currentParentRuleIsLeaf = isLeaf;
+	currentParentRuleIsLeafable = isLeafable;
 	std::vector<Command> body = visitCommands(ctx->body);
-	rules.push_back(Rule(name, body, isLeaf));
+	rules.push_back(Rule(name, body));
 	return NULL;
 }
 
@@ -76,10 +78,10 @@ antlrcpp::Any LsystemLoaderVisitor::visitSym(LsystemParser::SymContext* ctx) {
 
 antlrcpp::Any LsystemLoaderVisitor::visitSubruleSym(LsystemParser::SubruleSymContext* ctx) {
 	if (ctx->getText() == "F") {
-		currentCommands.push_back(Command(ctx->getText(), CommandType::FORWARD, currentParentRule, currentParentRuleIsLeaf));
+		currentCommands.push_back(Command(ctx->getText(), CommandType::FORWARD, currentParentRule, currentParentRuleIsLeaf, currentParentRuleIsLeafable));
 	}
 	else if (ctx->getText() == "f") {
-		currentCommands.push_back(Command(ctx->getText(), CommandType::SKIP_FORWARD, currentParentRule, currentParentRuleIsLeaf));
+		currentCommands.push_back(Command(ctx->getText(), CommandType::SKIP_FORWARD, currentParentRule, currentParentRuleIsLeaf, currentParentRuleIsLeafable));
 	}
 	else {
 		currentCommands.push_back(Command(ctx->getText(), CommandType::ID));

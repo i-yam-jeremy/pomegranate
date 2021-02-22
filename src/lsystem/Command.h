@@ -30,11 +30,12 @@ namespace lsystem {
 	*/
 	class Command {
 	public:
-		Command(std::string value, CommandType type, std::string parentRuleType, bool isLeaf) :
+		Command(std::string value, CommandType type, std::string parentRuleType, bool isLeaf, bool isLeafable) :
 			value(value),
 			type(type),
 			parentRuleType(parentRuleType),
-			isLeaf(isLeaf) {};
+			isLeaf(isLeaf),
+			isLeafable(isLeafable) {};
 		Command(std::string value, CommandType type) :
 			value(value),
 			type(type),
@@ -62,6 +63,10 @@ namespace lsystem {
 			Whether this command should produce a leaf piece of geometry (as opposed to a cylindrical segment).
 		*/
 		bool isLeaf = false;
+		/*
+			Whether this command is leafable (will auto-add leaves if a segment produced by this command has no children)
+		*/
+		bool isLeafable = false;
 		/*
 			The first float argument to this command.
 		*/

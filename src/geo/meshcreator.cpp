@@ -22,6 +22,10 @@ void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, Me
 	}
 	else {
 		createCylinder(segment, 16, 4, mc);
+		if (segment.isLeafable && segment.children.size() == 0) {
+			// TODO perform leafable action
+			createLeafCard();
+		}
 	}
 }
 
@@ -244,7 +248,7 @@ void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint
 	/*
 	1. Group intersection points by other face (possibly a multi-map or map of vectors)
 	2. Find all newly created vertices that intersect with the face
-	3. Add those vertices to the face in between the two vertices for the left edge, and the two vertices for the right edge, and there should only be four vertices per other face
+	3. Merge those vertices into the face
 	*/
 	std::unordered_map<Face*, std::vector<int>> intersectionsByOtherFace;
 	for (int i = 0; i < intersections.size(); i++) {
@@ -266,25 +270,8 @@ void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint
 		for (auto index : newVertexIndices) {
 			auto& newVertex = newVertices[index];
 			if (!newVertex.isValid()) continue;
-			// TODO ensure vertex is valid and hasn't already been merged with something else
 
 			mesh.mergeVertices(refPoint, newVertex);
-			/*
-			UV override calculation:
-			1. Find two closest vertices already on face
-			2. Get UVs from points (check if it has an overridden UV, if so use that, otherwise just use the base UV)
-			3. Weighted average of the two UVs by distances
-			(this is not perfect because it's possible the new point extends further than the other points or is far away from colinear to both points, but it should be good enough)
-			(could also check distance from line between two closest points, the compute weighted average, then find the distance from the line this new vertex is, then go that distance in texture space on the line perpendicular to the two vertices UV coords)
-			*/
-			/*auto& v1 = vertices[0];
-			auto d1 = distance(v1.pos(), newVertex.pos());
-			auto& v2 = vertices[2];
-			auto d2 = distance(v2.pos(), newVertex.pos());
-			vec2 uv = (d1*v1.uv() + d2*v2.uv()) / (d1+d2);
-
-			vertices.insert(vertices.begin() + 1, newVertex);
-			face.setVertexUVOverride(newVertex, uv);*/
 		}
 		face.update(vertices);
 	}
