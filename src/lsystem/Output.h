@@ -77,9 +77,9 @@ namespace lsystem {
 	};
 
 	/*
-		The entire output of the evaluated Lsystem.
+		The output of the evaluated Lsystem of a single set of commands.
 	*/
-	class Output {
+	class SingleOutput {
 	public:
 		/*
 			Adds a segment to this output collection.
@@ -91,12 +91,6 @@ namespace lsystem {
 			@return All segments in this output collection.
 		*/
 		const std::vector<std::shared_ptr<OutputSegment>>& getSegments();
-
-		/*
-			Returns all segment types.
-			@return All segment types.
-		*/
-		const std::vector<std::string>& getSegmentTypes();
 	private:
 		/*
 			The segments in this output collection.
@@ -104,6 +98,45 @@ namespace lsystem {
 		std::vector<std::shared_ptr<OutputSegment>> segments;
 		/*
 			All segment types (based on L-system rules).
+		*/
+		std::vector<std::string> segmentTypes;
+	};
+
+	/*
+		The entire output of the evaluated Lsystem.
+	*/
+	class Output {
+	public:
+		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes) :
+			mainOut(mainOut),
+			leafableOut(leafableOut),
+			segmentTypes(segmentTypes) {};
+		/*
+			Returns the main Lsystem output.
+			@return The main Lsystem output.
+		*/
+		std::shared_ptr<SingleOutput> getMainOut();
+		/*
+			Returns the leafable rule Lsystem output.
+			@return The leafable rule Lsystem output.
+		*/
+		std::shared_ptr<SingleOutput> getLeafableOut();
+		/*
+			Returns all segment types.
+			@return All segment types.
+		*/
+		const std::vector<std::string>& getSegmentTypes();
+	private:
+		/*
+			The main Lsystem output.
+		*/
+		std::shared_ptr<SingleOutput> mainOut;
+		/*
+			The output of the leafable rule.
+		*/
+		std::shared_ptr<SingleOutput> leafableOut;
+		/*
+			All segment types.
 		*/
 		std::vector<std::string> segmentTypes;
 	};

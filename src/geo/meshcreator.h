@@ -51,7 +51,8 @@ namespace geo {
 		float getEndTaperScale(const lsystem::OutputSegment& segment);
 		int getNonLeafChildCount(const lsystem::OutputSegment& segment);
 
-		void createLeafCard(const lsystem::OutputSegment& segment, MeshContext& mc);
+		void addLeafable(const lsystem::OutputSegment& segment);
+		void createLeafCard(const lsystem::OutputSegment& segment);
 
 		Mesh& mesh;
 		std::shared_ptr<lsystem::Output> lsystemOut;

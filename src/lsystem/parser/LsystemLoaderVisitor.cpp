@@ -9,8 +9,9 @@ antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* 
 	int generations = std::stoi(ctx->generations->getText());
 	std::shared_ptr<Value> angle = visitNumWithDev(ctx->angle);
 	std::vector<Command> initiator = visitCommands(ctx->initiator);
+	std::vector<Command> leafableRule = visitCommands(ctx->leafablerule);
 	visitChildren(ctx);
-	return std::make_shared<Lsystem>(generations, angle, initiator, rules);
+	return std::make_shared<Lsystem>(generations, angle, initiator, leafableRule, rules);
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitLrule(LsystemParser::LruleContext* ctx) {

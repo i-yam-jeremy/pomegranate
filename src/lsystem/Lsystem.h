@@ -21,12 +21,14 @@ namespace lsystem {
 			@param generations - The number of generations to apply when evaluating this Lsystem.
 			@param angle - The base angle of this Lsystem.
 			@param initiator - The started set of commands at generation 0.
+			@param leafableRule - The rule that is instanced whenever a leafable state is reached.
 			@param rules - The ruleset to apply each generation.
 		*/
-		Lsystem(int generations, std::shared_ptr<Value> angle, std::vector<Command> initiator, std::vector<Rule> rules):
+		Lsystem(int generations, std::shared_ptr<Value> angle, std::vector<Command> initiator, std::vector<Command> leafableRule, std::vector<Rule> rules):
 			generations(generations),
 			angle(angle),
 			state(initiator),
+			leafableRule(leafableRule),
 			rules(rules) {}
 
 		/*
@@ -41,19 +43,26 @@ namespace lsystem {
 		void overrideGenerations(float generations);
 	private:
 		/*
-			Applies a single generation of the Lsystem ruleset to the current state.
+			Applies a single generation of the Lsystem ruleset to the given set of commands.
 			@param generation The index of the generation to create. Used for tagging commands.
 			@param generationScale The length scale of this generation. Used for animating growth.
+			@return The new command list after the generation has been applied.
 		*/
-		void applySingleGeneration(int generation, float generationScale = 1.0f);
+		std::vector<Command> applySingleGeneration(const std::vector<Command>& commands, int generation, float generationScale = 1.0f);
 		/*
-			Evaluates all commands in the current state into an output structure for
+			Evaluates all commands given into an output structure for
 			instancing procedural geometry.
+			@param commands The commands to evaluate.
 			@return The evaluated Lsystem structure.
 		*/
-		std::shared_ptr<Output> eval();
+		std::shared_ptr<SingleOutput> eval(std::vector<Command>& commands);
 
 	private:
+		/*
+			Returns the names of all rules.
+			@return The name of each rule.
+		*/
+		std::vector<std::string> getRuleNames();
 		/*
 			The number of generations to apply when evaluating this Lsystem.
 			If the value is fractional, then ceil(generations) 
@@ -68,6 +77,10 @@ namespace lsystem {
 			The current ruleset state.
 		*/
 		std::vector<Command> state;
+		/*
+			The rule to be applied whenever a leafable state is reached.
+		*/
+		std::vector<Command> leafableRule;
 		/*
 			The ruleset.
 		*/

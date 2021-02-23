@@ -65,24 +65,26 @@ namespace lsystem {
 
 std::shared_ptr<Output> lsystem::Lsystem::compile() {
 	for (int i = 0; i < floor(generations); i++) {
-		applySingleGeneration(i);
+		state = applySingleGeneration(state, i);
 	}
 
 	float fractionalGeneration = fmod(generations, 1);
 	if (fractionalGeneration != 0.0f) {
-		applySingleGeneration(floor(generations), fractionalGeneration);
+		state = applySingleGeneration(state, floor(generations), fractionalGeneration);
 	}
 
-	return eval();
+	leafableRule = applySingleGeneration(leafableRule, 0);
+
+	return std::make_shared<Output>(eval(state), eval(leafableRule), getRuleNames());
 }
 
 void lsystem::Lsystem::overrideGenerations(float generations) {
 	this->generations = generations;
 }
 
-void lsystem::Lsystem::applySingleGeneration(int generation, float generationScale) {
+std::vector<Command> lsystem::Lsystem::applySingleGeneration(const std::vector<Command>& commands, int generation, float generationScale) {
 	std::vector<Command> newCommands;
-	for (auto& cmd : state) {
+	for (const auto& cmd : commands) {
 		if (cmd.type == CommandType::ID) {
 			bool foundMatchingRule = false;
 			for (auto& rule : rules) {
@@ -109,18 +111,18 @@ void lsystem::Lsystem::applySingleGeneration(int generation, float generationSca
 			newCommands.push_back(cmd);
 		}
 	}
-	state = newCommands;
+	return newCommands;
 }
 
-std::shared_ptr<Output> lsystem::Lsystem::eval() {
-	auto out = std::make_shared<Output>();
+std::shared_ptr<SingleOutput> lsystem::Lsystem::eval(std::vector<Command>& commands) {
+	auto out = std::make_shared<SingleOutput>();
 
 	std::vector<EvalState> stack;
 
 	EvalState currentState(angle);
 
-	for (int i = 0; i < state.size(); i++) {
-		const auto& cmd = state[i];
+	for (int i = 0; i < commands.size(); i++) {
+		const auto& cmd = commands[i];
 		Random::setActiveGeneration(cmd.generation);
 		auto& angle = (cmd.dataValue == nullptr) ? currentState.angleChange : cmd.dataValue;
 		switch (cmd.type) {
@@ -187,6 +189,14 @@ std::shared_ptr<Output> lsystem::Lsystem::eval() {
 	}
 
 	return out;
+}
+
+std::vector<std::string> lsystem::Lsystem::getRuleNames() {
+	std::vector<std::string> names;
+	for (const auto& rule : rules) {
+		names.push_back(rule.name);
+	}
+	return names;
 }
 
 std::shared_ptr<lsystem::Output> lsystem::compile(std::string source, float overridedGenerations, bool useGenerationsOverride) {

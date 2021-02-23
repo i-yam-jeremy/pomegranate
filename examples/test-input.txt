@@ -9,4 +9,4 @@ Start = "(1.0)Trunk,
 Trunk [leafable] = @(0.85)@(0.5)f@(2.0)F+(0 dev 30)[(0.5)/(0 dev 30)+(45.0)@(0.5)fBranch][/(120 dev 30)+(45)@(0.5)fBranch][\\(120 dev 30)+(45)@(0.5)fBranch]@(0.2)f@(5)Trunk,
 Branch [leafable] = +@(0.5)f@(2)@(0.85)F+(0 dev 30)[/(0 dev 30)+(45.0)@(0.5)f@(1.33)Smallbranch][/(120 dev 30)+(45)@(0.5)f@(1.33)Smallbranch][\\(120 dev 30)+(45)@(0.5)f@(1.33)Smallbranch]Branch,
 Smallbranch [leafable] = +@(0.5)f@(2)@(0.85)F+(0 dev 30)[/(0 dev 30)+(45.0)@(0.333)f@(3.0)Leaf][/(120 dev 30)+(45)@(0.333)f@(3.0)Leaf][\\(120 dev 30)+(45)@(0.333)f@(3.0)Leaf]Smallbranch,
-Leaf [leaf] = F
+Leaf [leaf] = [F][-(60)F][+(60)F]

@@ -5,7 +5,7 @@
 
 void io::exportCSVRig(std::string path, std::shared_ptr<lsystem::Output> out) {
 	std::ofstream fout(path);
-	for (const auto segment : out->getSegments()) {
+	for (const auto& segment : out->getMainOut()->getSegments()) {
 		int parentId = (segment->parent == nullptr) ? -1 : segment->parent->id;
 		auto t = segment->translation;
 		fout << segment->id << ",";

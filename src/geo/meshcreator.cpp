@@ -8,7 +8,7 @@ using namespace glm;
 
 void geo::MeshCreator::instance() {
 	MeshContext mc;
-	for (const auto& segmentPtr : lsystemOut->getSegments()) {
+	for (const auto& segmentPtr : lsystemOut->getMainOut()->getSegments()) {
 		const lsystem::OutputSegment segment = *segmentPtr;
 		instanceSegment(segment, mc);
 	}
@@ -18,13 +18,12 @@ void geo::MeshCreator::instance() {
 
 void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, MeshContext& mc) {
 	if (segment.isLeaf) {
-		createLeafCard(segment, mc);
+		createLeafCard(segment);
 	}
 	else {
 		createCylinder(segment, 16, 4, mc);
 		if (segment.isLeafable && segment.children.size() == 0) {
-			// TODO perform leafable action
-			createLeafCard();
+			addLeafable(segment);
 		}
 	}
 }
@@ -407,7 +406,17 @@ int geo::MeshCreator::getNonLeafChildCount(const lsystem::OutputSegment& segment
 	return size;
 }
 
-void geo::MeshCreator::createLeafCard(const lsystem::OutputSegment& segment, MeshContext& mc) {
+void geo::MeshCreator::addLeafable(const lsystem::OutputSegment& segment) {
+	auto leafableOut = lsystemOut->getLeafableOut();
+	for (const auto& leafSegmentPtr : leafableOut->getSegments()) {
+		lsystem::OutputSegment leafSegment = *leafSegmentPtr;
+		leafSegment.mat = segment.mat * leafSegment.mat;
+		leafSegment.translation += segment.translation;
+		createLeafCard(leafSegment);
+	}
+}
+
+void geo::MeshCreator::createLeafCard(const lsystem::OutputSegment& segment) {
 	std::vector<vec3> localPositions = {
 		vec3(0, 0, 0),
 		vec3(1, 0, 0),

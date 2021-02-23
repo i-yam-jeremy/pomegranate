@@ -3,7 +3,7 @@ lsystem:
 	'generations' '=' generations=INT ','
 	'angle' '=' angle=numWithDev ','
 	'init' '=' initiator=commands ','
-	('leafable' '=' leafablerule=ID ',')?
+	('leafable' '=' leafablerule=commands ',')?
 	'rules' ':' lrule (',' lrule)*;
 lrule: name=ID ('[' isleaf='leaf' ']')? ('[' isleafable='leafable' ']')? '=' body=commands;
 commands: (sym | subruleSym | scaleLength)*;
