@@ -22,6 +22,7 @@ namespace lsystem {
 		SKIP_FORWARD,
 		SCALE_LENGTH,
 		SCALE_ALL,
+		SCALE_RADIUS,
 		ID
 	};
 

@@ -149,6 +149,12 @@ std::shared_ptr<SingleOutput> lsystem::Lsystem::eval(std::vector<Command>& comma
 		case SCALE_ALL:
 			currentState.scaleUniform(cmd.dataValue->sample());
 			break;
+		case SCALE_RADIUS: {
+			auto scale = cmd.dataValue->sample();
+			currentState.scaleLength(1.0f / scale);
+			currentState.scaleUniform(scale);
+			break;
+		}
 		case YAW_LEFT:
 			currentState.rotate(-angle->sample(), 0, 0);
 			break;

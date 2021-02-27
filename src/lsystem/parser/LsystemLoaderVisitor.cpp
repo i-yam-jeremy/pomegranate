@@ -73,6 +73,9 @@ antlrcpp::Any LsystemLoaderVisitor::visitSym(LsystemParser::SymContext* ctx) {
 	case LsystemLexer::SCALE_ALL:
 		cmd = Command(ctx->getText(), CommandType::SCALE_ALL);
 		break;
+	case LsystemLexer::SCALE_RADIUS:
+		cmd = Command(ctx->getText(), CommandType::SCALE_RADIUS);
+		break;
 	default:
 		std::cerr << "Error no command symbol found: " << ctx->getText() << std::endl;
 		exit(1);
