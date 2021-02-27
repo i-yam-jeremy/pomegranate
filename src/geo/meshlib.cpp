@@ -120,6 +120,21 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 	auto& facesContainingB = vertices[getHandle(b)].faces;
 	for (auto& face : facesContainingB) {
 		auto& found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
+
+		// Get UV coordinate of B on current face
+		vec2 uvB;
+		auto& vertexUVOverrides = faces[face].vertexUVOverrides;
+		auto& foundUVOverride = vertexUVOverrides.find(getHandle(b));
+		if (foundUVOverride != vertexUVOverrides.end()) {
+			uvB = foundUVOverride->second;
+			vertexUVOverrides.erase(foundUVOverride);
+		}
+		else {
+			uvB = b.uv();
+		}
+
+
+		// Update face vertices
 		if (found == facesContainingA.end()) { // Vertex a is not in the face, so replace b with a
 			facesContainingA.push_back(face);
 
@@ -129,6 +144,8 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 					faceVertices[i] = getHandle(a);
 				}
 			}
+
+			vertexUVOverrides[getHandle(a)] = uvB;
 		}
 		else { // Vertex a is already on the face, so just remove b
 			auto& faceVertices = faces[face].vertices;
@@ -137,6 +154,15 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 					faceVertices.erase(faceVertices.begin() + i);
 					i--;
 				}
+			}
+
+			auto& foundUVOverride = vertexUVOverrides.find(getHandle(a));
+			if (foundUVOverride != vertexUVOverrides.end()) {
+				vec2 uvA = vertexUVOverrides[getHandle(a)];
+				vertexUVOverrides[getHandle(a)] = (uvA + uvB) / 2.0f;
+			}
+			else {
+				a.uv((a.uv() + uvB) / 2.0f);
 			}
 		}
 	}
