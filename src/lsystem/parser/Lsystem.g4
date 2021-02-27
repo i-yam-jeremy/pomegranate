@@ -3,7 +3,8 @@ lsystem:
 	'generations' '=' generations=INT ','
 	'angle' '=' angle=numWithDev ','
 	('ringvertexcount' '=' ringvertexcount=INT ',')?
-	('ringspersegment' '=' ringspersegment=INT ',')?
+	('ringsperworlddist' '=' ringsperworlddist=num ',')?
+	('minringspersegment' '=' minringspersegment=INT ',')?
 	'init' '=' initiator=commands ','
 	('leafable' '=' leafablerule=commands ',')?
 	'rules' ':' lrule (',' lrule)*;

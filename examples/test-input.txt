@@ -1,7 +1,8 @@
 generations=5,
 angle=15.0,
 ringvertexcount=16,
-ringspersegment=2,
+ringsperworlddist=4.0,
+minringspersegment=0,
 
 init=Start,
 leafable=Leaf,

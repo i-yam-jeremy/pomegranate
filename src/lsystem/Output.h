@@ -107,12 +107,13 @@ namespace lsystem {
 	*/
 	class Output {
 	public:
-		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes, int ringVertexCount, int ringsPerSegment) :
+		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes, int ringVertexCount, float ringsPerWorldDist, int minRingsPerSegment) :
 			mainOut(mainOut),
 			leafableOut(leafableOut),
 			segmentTypes(segmentTypes),
 			ringVertexCount(ringVertexCount),
-			ringsPerSegment(ringsPerSegment) {};
+			ringsPerWorldDist(ringsPerWorldDist),
+			minRingsPerSegment(minRingsPerSegment) {};
 		/*
 			Returns the main Lsystem output.
 			@return The main Lsystem output.
@@ -133,9 +134,13 @@ namespace lsystem {
 		*/
 		int getRingVertexCount();
 		/*
-			@return The number of rings per segment in the output geometry.
+			@return The number of rings per 1 unit of world space to add to each segment in the output geometry.
 		*/
-		int getRingsPerSegment();
+		float getRingsPerWorldDist();
+		/*
+			@return The minimum number of rings per segment in the output geometry. Rings per segment will never go below this value.
+		*/
+		int getMinRingsPerSegment();
 	private:
 		/*
 			The main Lsystem output.
@@ -154,9 +159,13 @@ namespace lsystem {
 		*/
 		int ringVertexCount;
 		/*
-			The number of rings per segment in the output geometry.
+			The number of rings per 1 unit of world space to add to each segment in the output geometry.
 		*/
-		int ringsPerSegment;
+		float ringsPerWorldDist;
+		/*
+			The minimum number of rings per segment in the output geometry. Rings per segment will never go below this value.
+		*/
+		int minRingsPerSegment;
 	};
 
 }

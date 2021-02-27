@@ -75,7 +75,7 @@ std::shared_ptr<Output> lsystem::Lsystem::compile() {
 
 	leafableRule = applySingleGeneration(leafableRule, 0);
 
-	return std::make_shared<Output>(eval(state), eval(leafableRule), getRuleNames(), ringVertexCount, ringsPerSegment);
+	return std::make_shared<Output>(eval(state), eval(leafableRule), getRuleNames(), ringVertexCount, ringsPerWorldDist, minRingsPerSegment);
 }
 
 void lsystem::Lsystem::overrideGenerations(float generations) {

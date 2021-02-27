@@ -31,6 +31,10 @@ int lsystem::Output::getRingVertexCount() {
 	return ringVertexCount;
 }
 
-int lsystem::Output::getRingsPerSegment() {
-	return ringsPerSegment;
+float lsystem::Output::getRingsPerWorldDist() {
+	return ringsPerWorldDist;
+}
+
+int lsystem::Output::getMinRingsPerSegment() {
+	return minRingsPerSegment;
 }

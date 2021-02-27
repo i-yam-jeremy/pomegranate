@@ -21,16 +21,18 @@ namespace lsystem {
 			@param generations - The number of generations to apply when evaluating this Lsystem.
 			@param angle - The base angle of this Lsystem.
 			@param ringVertexCount - The number of vertices per ring in the output geometry.
-			@param ringsPerSegment - The number of rings per segment in the output geometry.
+			@param ringsPerWorldDist - The number of rings per 1 unit of world space to add to each segment in the output geometry.
+			@param minRingsPerSegment - The minimum number of rings per segment in the output geometry. Rings per segment will never go below this value.
 			@param initiator - The started set of commands at generation 0.
 			@param leafableRule - The rule that is instanced whenever a leafable state is reached.
 			@param rules - The ruleset to apply each generation.
 		*/
-		Lsystem(int generations, std::shared_ptr<Value> angle, int ringVertexCount, int ringsPerSegment, std::vector<Command> initiator, std::vector<Command> leafableRule, std::vector<Rule> rules):
+		Lsystem(int generations, std::shared_ptr<Value> angle, int ringVertexCount, float ringsPerWorldDist, int minRingsPerSegment, std::vector<Command> initiator, std::vector<Command> leafableRule, std::vector<Rule> rules):
 			generations(generations),
 			angle(angle),
 			ringVertexCount(ringVertexCount),
-			ringsPerSegment(ringsPerSegment),
+			ringsPerWorldDist(ringsPerWorldDist),
+			minRingsPerSegment(minRingsPerSegment),
 			state(initiator),
 			leafableRule(leafableRule),
 			rules(rules) {}
@@ -82,9 +84,13 @@ namespace lsystem {
 		*/
 		int ringVertexCount;
 		/*
-			The number of rings per segment in the output geometry.
+			The number of rings per 1 unit of world space to add to each segment in the output geometry.
 		*/
-		int ringsPerSegment;
+		float ringsPerWorldDist;
+		/*
+			The minimum number of rings per segment in the output geometry. Rings per segment will never go below this value.
+		*/
+		int minRingsPerSegment;
 		/*
 			The current ruleset state.
 		*/

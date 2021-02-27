@@ -11,14 +11,17 @@ antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* 
 	int ringVertexCount = (ctx->ringvertexcount != nullptr) ?
 		std::stoi(ctx->ringvertexcount->getText()) :
 		16;
-	int ringsPerSegment = (ctx->ringspersegment != nullptr) ?
-		std::stoi(ctx->ringspersegment->getText()) :
+	float ringsPerWorldDist = (ctx->ringsperworlddist != nullptr) ?
+		std::atof(ctx->ringsperworlddist->getText().c_str()) :
+		0.0f;
+	int minRingsPerSegment = (ctx->minringspersegment != nullptr) ?
+		std::stoi(ctx->minringspersegment->getText()) :
 		2;
 
 	std::vector<Command> initiator = visitCommands(ctx->initiator);
 	std::vector<Command> leafableRule = visitCommands(ctx->leafablerule);
 	visitChildren(ctx);
-	return std::make_shared<Lsystem>(generations, angle, ringVertexCount, ringsPerSegment, initiator, leafableRule, rules);
+	return std::make_shared<Lsystem>(generations, angle, ringVertexCount, ringsPerWorldDist, minRingsPerSegment, initiator, leafableRule, rules);
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitLrule(LsystemParser::LruleContext* ctx) {

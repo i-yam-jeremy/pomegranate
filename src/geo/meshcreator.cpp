@@ -21,7 +21,9 @@ void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, Me
 		createLeafCard(segment);
 	}
 	else {
-		createCylinder(segment, lsystemOut->getRingVertexCount(), lsystemOut->getRingsPerSegment(), mc);
+		auto segmentLength = distance(vec3(0), vec3(vec4(1, 0, 0, 0) * segment.mat));
+		auto ringsPerSegment = std::max(int(floor(lsystemOut->getRingsPerWorldDist() * segmentLength)), lsystemOut->getMinRingsPerSegment());
+		createCylinder(segment, lsystemOut->getRingVertexCount(), ringsPerSegment, mc);
 		if (segment.isLeafable && segment.children.size() == 0) {
 			addLeafable(segment);
 		}
