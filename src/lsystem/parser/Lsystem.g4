@@ -9,10 +9,9 @@ lsystem:
 	('leafable' '=' leafablerule=commands ',')?
 	'rules' ':' lrule (',' lrule)*;
 lrule: name=ID ('[' isleaf='leaf' ']')? ('[' isleafable='leafable' ']')? '=' body=commands;
-commands: (sym | subruleSym | scaleLength)*;
-sym: ( LEFT | RIGHT | ROLL_CW | ROLL_CCW | PITCH_UP | PITCH_DOWN | PUSH | POP | SCALE_ALL | SCALE_RADIUS ) ( '(' arg1=numWithDev ')' )?;
+commands: (sym | subruleSym)*;
+sym: ( LEFT | RIGHT | ROLL_CW | ROLL_CCW | PITCH_UP | PITCH_DOWN | PUSH | POP | SCALE_LENGTH | SCALE_ALL | SCALE_RADIUS ) ( '(' arg1=numWithDev ')' )?;
 subruleSym: ID | 'f';
-scaleLength: '"' '(' value=numWithDev ')';
 numWithDev: value=num ('dev' dev=num)?;
 num: FLOAT|INT;
 
@@ -22,6 +21,7 @@ ROLL_CW	: '\\\\';
 ROLL_CCW: '/';
 PITCH_UP: '&';
 PITCH_DOWN: '^';
+SCALE_LENGTH: '"';
 SCALE_ALL: '@';
 SCALE_RADIUS: '`';
 PUSH	: '[';

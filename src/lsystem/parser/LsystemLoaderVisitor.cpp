@@ -70,6 +70,9 @@ antlrcpp::Any LsystemLoaderVisitor::visitSym(LsystemParser::SymContext* ctx) {
 	case LsystemLexer::POP:
 		cmd = Command(ctx->getText(), CommandType::POP);
 		break;
+	case LsystemLexer::SCALE_LENGTH:
+		cmd = Command(ctx->getText(), CommandType::SCALE_LENGTH);
+		break;
 	case LsystemLexer::SCALE_ALL:
 		cmd = Command(ctx->getText(), CommandType::SCALE_ALL);
 		break;
@@ -100,12 +103,6 @@ antlrcpp::Any LsystemLoaderVisitor::visitSubruleSym(LsystemParser::SubruleSymCon
 	else {
 		currentCommands.push_back(Command(ctx->getText(), CommandType::ID));
 	}
-	return NULL;
-}
-
-antlrcpp::Any LsystemLoaderVisitor::visitScaleLength(LsystemParser::ScaleLengthContext* ctx) {
-	std::shared_ptr<Value> scaleFactor = visitNumWithDev(ctx->value);
-	currentCommands.push_back(Command(ctx->getText(), CommandType::SCALE_LENGTH, scaleFactor));
 	return NULL;
 }
 

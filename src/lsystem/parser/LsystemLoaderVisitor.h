@@ -48,12 +48,6 @@ namespace lsystem {
 		*/
 		virtual antlrcpp::Any visitSubruleSym(LsystemParser::SubruleSymContext* ctx) override;
 		/*
-			Adds a scale length command to the current commands.
-			@param ctx The context.
-			@return NULL (ignored value)
-		*/
-		virtual antlrcpp::Any visitScaleLength(LsystemParser::ScaleLengthContext* ctx) override;
-		/*
 			Returns the parsed lsystem::Value with a standard deviation.
 			@param ctx The context.
 			@return lsystem::Value The parsed value with a standard deviation.
