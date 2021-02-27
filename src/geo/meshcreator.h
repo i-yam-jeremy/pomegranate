@@ -47,6 +47,7 @@ namespace geo {
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
 		void createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc);
 		void createCircle(std::vector<Vertex>& vertices, glm::mat4 mat, glm::vec3 translation, float interpFactor, int pointCount, float taperScale);
+		void fillCircle(std::vector<Vertex>& vertices, std::string segmentType);
 
 		float getEndTaperScale(const lsystem::OutputSegment& segment);
 		int getNonLeafChildCount(const lsystem::OutputSegment& segment);

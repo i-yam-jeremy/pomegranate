@@ -357,6 +357,9 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	}
 	else {
 		createCircle(vertices, segment.mat, segment.translation, 0, pointCount, 1.0f);
+		if (segment.parent == nullptr) {
+			fillCircle(vertices, segment.type);
+		}
 	}
 	auto startVertices = std::vector<Vertex>(vertices);
 	const float endTaperScale = getEndTaperScale(segment);
@@ -394,6 +397,25 @@ void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec
 		auto v = mesh.addVertex(p);
 		v.uv(vec2(float(i)/pointCount, interpFactor));
 		vertices.push_back(v);
+	}
+}
+
+void geo::MeshCreator::fillCircle(std::vector<Vertex>& vertices, std::string segmentType) {
+	vec3 center(0);
+	for (auto& v : vertices) {
+		center += v.pos();
+	}
+	center /= vertices.size();
+
+	auto centerVertex = mesh.addVertex(center);
+
+	std::vector<Vertex> verts;
+	for (size_t i = 0; i < vertices.size(); i++) {
+		verts.push_back(vertices[i]);
+		verts.push_back(vertices[(i + 1) % vertices.size()]);
+		verts.push_back(centerVertex);
+		mesh.addFace(verts, segmentType);
+		verts.clear();
 	}
 }
 
