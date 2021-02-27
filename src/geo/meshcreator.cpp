@@ -434,7 +434,23 @@ void geo::MeshCreator::addLeafable(const lsystem::OutputSegment& segment) {
 	auto leafableOut = lsystemOut->getLeafableOut();
 	for (const auto& leafSegmentPtr : leafableOut->getSegments()) {
 		lsystem::OutputSegment leafSegment = *leafSegmentPtr;
-		leafSegment.mat = segment.mat * leafSegment.mat;
+		vec3 b1 = normalize(vec3(segment.mat[0][0], segment.mat[0][1], segment.mat[0][2])),
+			 b2 = normalize(vec3(segment.mat[1][0], segment.mat[1][1], segment.mat[1][2])),
+			 b3 = normalize(vec3(segment.mat[2][0], segment.mat[2][1], segment.mat[2][2]));
+		mat4 m(0);
+		m[0][0] = b1[0];
+		m[0][1] = b1[1];
+		m[0][2] = b1[2];
+		m[1][0] = b2[0];
+		m[1][1] = b2[1];
+		m[1][2] = b2[2];
+		m[2][0] = b3[0];
+		m[2][1] = b3[1];
+		m[2][2] = b3[2];
+
+		mat4 segmentMatNoScaling = m;
+
+		leafSegment.mat = segmentMatNoScaling * leafSegment.mat;
 		leafSegment.translation += segment.translation;
 		createLeafCard(leafSegment);
 	}
