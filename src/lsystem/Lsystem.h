@@ -20,13 +20,17 @@ namespace lsystem {
 			Creates an Lsystem from the given parameters.
 			@param generations - The number of generations to apply when evaluating this Lsystem.
 			@param angle - The base angle of this Lsystem.
+			@param ringVertexCount - The number of vertices per ring in the output geometry.
+			@param ringsPerSegment - The number of rings per segment in the output geometry.
 			@param initiator - The started set of commands at generation 0.
 			@param leafableRule - The rule that is instanced whenever a leafable state is reached.
 			@param rules - The ruleset to apply each generation.
 		*/
-		Lsystem(int generations, std::shared_ptr<Value> angle, std::vector<Command> initiator, std::vector<Command> leafableRule, std::vector<Rule> rules):
+		Lsystem(int generations, std::shared_ptr<Value> angle, int ringVertexCount, int ringsPerSegment, std::vector<Command> initiator, std::vector<Command> leafableRule, std::vector<Rule> rules):
 			generations(generations),
 			angle(angle),
+			ringVertexCount(ringVertexCount),
+			ringsPerSegment(ringsPerSegment),
 			state(initiator),
 			leafableRule(leafableRule),
 			rules(rules) {}
@@ -73,6 +77,14 @@ namespace lsystem {
 			The base angle.
 		*/
 		std::shared_ptr<Value> angle;
+		/*
+			The number of vertices per ring in the output geometry.
+		*/
+		int ringVertexCount;
+		/*
+			The number of rings per segment in the output geometry.
+		*/
+		int ringsPerSegment;
 		/*
 			The current ruleset state.
 		*/

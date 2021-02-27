@@ -21,7 +21,7 @@ void geo::MeshCreator::instanceSegment(const lsystem::OutputSegment& segment, Me
 		createLeafCard(segment);
 	}
 	else {
-		createCylinder(segment, 16, 4, mc);
+		createCylinder(segment, lsystemOut->getRingVertexCount(), lsystemOut->getRingsPerSegment(), mc);
 		if (segment.isLeafable && segment.children.size() == 0) {
 			addLeafable(segment);
 		}

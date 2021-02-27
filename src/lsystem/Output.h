@@ -107,10 +107,12 @@ namespace lsystem {
 	*/
 	class Output {
 	public:
-		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes) :
+		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes, int ringVertexCount, int ringsPerSegment) :
 			mainOut(mainOut),
 			leafableOut(leafableOut),
-			segmentTypes(segmentTypes) {};
+			segmentTypes(segmentTypes),
+			ringVertexCount(ringVertexCount),
+			ringsPerSegment(ringsPerSegment) {};
 		/*
 			Returns the main Lsystem output.
 			@return The main Lsystem output.
@@ -126,6 +128,14 @@ namespace lsystem {
 			@return All segment types.
 		*/
 		const std::vector<std::string>& getSegmentTypes();
+		/*
+			@return The number of vertices per ring in the output geometry.
+		*/
+		int getRingVertexCount();
+		/*
+			@return The number of rings per segment in the output geometry.
+		*/
+		int getRingsPerSegment();
 	private:
 		/*
 			The main Lsystem output.
@@ -139,6 +149,14 @@ namespace lsystem {
 			All segment types.
 		*/
 		std::vector<std::string> segmentTypes;
+		/*
+			The number of vertices per ring in the output geometry.
+		*/
+		int ringVertexCount;
+		/*
+			The number of rings per segment in the output geometry.
+		*/
+		int ringsPerSegment;
 	};
 
 }

@@ -26,3 +26,11 @@ std::shared_ptr<SingleOutput> lsystem::Output::getLeafableOut() {
 const std::vector<std::string>& lsystem::Output::getSegmentTypes() {
 	return segmentTypes;
 }
+
+int lsystem::Output::getRingVertexCount() {
+	return ringVertexCount;
+}
+
+int lsystem::Output::getRingsPerSegment() {
+	return ringsPerSegment;
+}

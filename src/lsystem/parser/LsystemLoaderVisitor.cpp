@@ -8,10 +8,17 @@ antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* 
 	rules = std::vector<Rule>();
 	int generations = std::stoi(ctx->generations->getText());
 	std::shared_ptr<Value> angle = visitNumWithDev(ctx->angle);
+	int ringVertexCount = (ctx->ringvertexcount != nullptr) ?
+		std::stoi(ctx->ringvertexcount->getText()) :
+		16;
+	int ringsPerSegment = (ctx->ringspersegment != nullptr) ?
+		std::stoi(ctx->ringspersegment->getText()) :
+		2;
+
 	std::vector<Command> initiator = visitCommands(ctx->initiator);
 	std::vector<Command> leafableRule = visitCommands(ctx->leafablerule);
 	visitChildren(ctx);
-	return std::make_shared<Lsystem>(generations, angle, initiator, leafableRule, rules);
+	return std::make_shared<Lsystem>(generations, angle, ringVertexCount, ringsPerSegment, initiator, leafableRule, rules);
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitLrule(LsystemParser::LruleContext* ctx) {

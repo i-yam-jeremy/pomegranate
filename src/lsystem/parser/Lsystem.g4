@@ -2,6 +2,8 @@ grammar Lsystem;
 lsystem: 
 	'generations' '=' generations=INT ','
 	'angle' '=' angle=numWithDev ','
+	('ringvertexcount' '=' ringvertexcount=INT ',')?
+	('ringspersegment' '=' ringspersegment=INT ',')?
 	'init' '=' initiator=commands ','
 	('leafable' '=' leafablerule=commands ',')?
 	'rules' ':' lrule (',' lrule)*;
