@@ -19,9 +19,16 @@ antlrcpp::Any LsystemLoaderVisitor::visitLsystem(LsystemParser::LsystemContext* 
 		2;
 
 	std::vector<Command> initiator = visitCommands(ctx->initiator);
-	std::vector<Command> leafableRule = visitCommands(ctx->leafablerule);
+	std::vector<Command> leafableRule;
+	if (ctx->leafablerule != nullptr) {
+		leafableRule = visitCommands(ctx->leafablerule).as<std::vector<Command>>();
+	}
 	visitChildren(ctx);
-	return std::make_shared<Lsystem>(generations, angle, ringVertexCount, ringsPerWorldDist, minRingsPerSegment, initiator, leafableRule, rules);
+	return std::make_shared<Lsystem>(generations, angle, 
+		ringVertexCount, ringsPerWorldDist, minRingsPerSegment,
+		initiator, 
+		leafableRule,
+		rules);
 }
 
 antlrcpp::Any LsystemLoaderVisitor::visitLrule(LsystemParser::LruleContext* ctx) {
