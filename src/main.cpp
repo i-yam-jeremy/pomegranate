@@ -10,13 +10,7 @@
 #include "geo/geo.h"
 #include "value/Random.h"
 
-int main(/*int argc, char** argv*/) {
-	int argc = 4;
-	char* argv[] ={ 
-	"Pomegranate",
-	"C:/Users/Jeremy Berchtold/Documents/GitHub/pomegranate/examples/test-input.txt",
-	"--seed=0",
-	"--override-generations=5"};
+int main(int argc, char** argv) {
 
 	const flags::args args(argc, argv);
 	if (args.positional().size() != 1) {
