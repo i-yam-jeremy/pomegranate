@@ -303,7 +303,8 @@ void geo::MeshCreator::collapseAllMeshHoles() {
 void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> intersections) {
 	std::vector<Vertex> newVertices;
 	for (auto& p : intersections) {
-		const auto newVertex = p.edge.split(p.t);
+		auto newVertex = p.edge.split(p.t);
+		newVertex.uv(vec2(p.edge.v0().uv().x, p.t)); // Fix UVs from split
 		newVertices.push_back(newVertex);
 	}
 
@@ -379,7 +380,7 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
 	
-	if (segment.children.size() == 0) { // If end taper scale is zero, then merge vertices to not have an open hole
+	if (getNonLeafChildCount(segment) == 0) { // If end taper scale is zero, then merge vertices to not have an open hole
 		for (int i = 1; i < vertices.size(); i++) {
 			mesh.mergeVertices(vertices[0], vertices[i]);
 		}
