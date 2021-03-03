@@ -260,19 +260,19 @@ void geo::MeshCreator::mergeInIntersectionVertices(std::vector<IntersectionPoint
 	for (auto& entry : intersectionsByOtherFace) {
 		auto face = *(entry.first);
 		auto vertices = face.vertices();
-		auto& refPoint = vertices[0];
+		auto& refPointA = vertices[0];
+		auto& refPointB = vertices[1];
 		auto& newVertexIndices = entry.second;
-		std::sort(newVertexIndices.begin(), newVertexIndices.end(),
-			[&](int a, int b) {
-				float distA = distance(newVertices[a].pos(), refPoint.pos());
-				float distB = distance(newVertices[b].pos(), refPoint.pos());
-				return distA < distB;
-			});
 		for (auto index : newVertexIndices) {
 			auto& newVertex = newVertices[index];
 			if (!newVertex.isValid()) continue;
-
-			mesh.mergeVertices(refPoint, newVertex);
+			auto p = newVertex.pos();
+			if (distance(p, refPointA.pos()) < distance(p, refPointB.pos())) {
+				mesh.mergeVertices(refPointA, newVertex);
+			}
+			else {
+				mesh.mergeVertices(refPointB, newVertex);
+			}
 		}
 		face.update(vertices);
 	}
