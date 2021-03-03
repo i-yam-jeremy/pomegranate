@@ -304,7 +304,6 @@ void geo::MeshCreator::createManifoldBranchHull(std::vector<IntersectionPoint> i
 	std::vector<Vertex> newVertices;
 	for (auto& p : intersections) {
 		auto newVertex = p.edge.split(p.t);
-		newVertex.uv(vec2(p.edge.v0().uv().x, p.t)); // Fix UVs from split
 		newVertices.push_back(newVertex);
 	}
 
