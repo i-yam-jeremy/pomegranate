@@ -148,7 +148,15 @@ void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const st
 	for (int j = 0; j < loop1.size(); j++) {
 		quad.clear();
 		generateQuad(quad, loop1, loop2, offset, j);
-		const auto face = mesh.addFace(quad, segmentType);
+		auto face = mesh.addFace(quad, segmentType);
+
+		if (quad[2].uv().x == 0.0f) { // Add vertex UV override to correctly UV wrap around cylinder
+			face.setVertexUVOverride(quad[2], vec2(1.0f, quad[2].uv().y));
+		}
+		if (j + 1 == loop1.size()) { // Add vertex UV override to correctly UV wrap around cylinder
+			face.setVertexUVOverride(quad[1], vec2(1.0f, quad[1].uv().y));
+		}
+
 		const auto edges = face.edges();
 		bridge.mainEdges.push_back(edges[1]); // Just need one edge because the next edge will be captured by the next quad
 		bridge.quads.push_back(face);
@@ -374,7 +382,11 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 			faceVertices.push_back(vertices[((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + ((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + i]);
-			mesh.addFace(faceVertices, segment.type);
+			auto face = mesh.addFace(faceVertices, segment.type);
+			if (i + 1 == pointCount) { // Add vertex UV override to correctly UV wrap around cylinder
+				face.setVertexUVOverride(faceVertices[1], vec2(1.0f, faceVertices[1].uv().y));
+				face.setVertexUVOverride(faceVertices[2], vec2(1.0f, faceVertices[2].uv().y));
+			}
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
 	}
