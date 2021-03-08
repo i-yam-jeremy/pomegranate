@@ -383,9 +383,22 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 			faceVertices.push_back(vertices[pointCount + ((i + 1) % pointCount)]);
 			faceVertices.push_back(vertices[pointCount + i]);
 			auto face = mesh.addFace(faceVertices, segment.type);
+
+			bool usedOverride = false;
+			vec2 uvOverrideIndex1 = faceVertices[1].uv();
+			if (j == 0 && segment.parent != nullptr && segment.parent->children.size() == 1) {
+				face.setVertexUVOverride(faceVertices[0], vec2(faceVertices[0].uv().x, 0.0f));
+				uvOverrideIndex1 = vec2(uvOverrideIndex1.x, 0.0f);
+				usedOverride = true;
+			}
 			if (i + 1 == pointCount) { // Add vertex UV override to correctly UV wrap around cylinder
-				face.setVertexUVOverride(faceVertices[1], vec2(1.0f, faceVertices[1].uv().y));
+				uvOverrideIndex1 = vec2(1.0f, uvOverrideIndex1.y);
+				usedOverride = true;
 				face.setVertexUVOverride(faceVertices[2], vec2(1.0f, faceVertices[2].uv().y));
+			}
+
+			if (usedOverride) {
+				face.setVertexUVOverride(faceVertices[1], uvOverrideIndex1);
 			}
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
