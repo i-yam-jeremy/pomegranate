@@ -107,7 +107,7 @@ namespace lsystem {
 	*/
 	class Output {
 	public:
-		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string>& segmentTypes, int ringVertexCount, float ringsPerWorldDist, int minRingsPerSegment) :
+		Output(std::shared_ptr<SingleOutput> mainOut, std::shared_ptr<SingleOutput> leafableOut, std::vector<std::string> segmentTypes, int ringVertexCount, float ringsPerWorldDist, int minRingsPerSegment) :
 			mainOut(mainOut),
 			leafableOut(leafableOut),
 			segmentTypes(segmentTypes),
