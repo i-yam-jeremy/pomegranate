@@ -18,10 +18,12 @@ namespace geo {
 			Creates a segment with the given properties
 			@param startVertices The starting edge loop of vertices.
 			@param endVertices The ending edge loop of vertices.
+			@param endUVY The end UV y-coordinate of this segment.
 		*/
-		Segment(std::vector<meshlib::Vertex> startVertices, std::vector<meshlib::Vertex> endVertices) :
+		Segment(std::vector<meshlib::Vertex> startVertices, std::vector<meshlib::Vertex> endVertices, float endUVY) :
 			startVertices(startVertices),
-			endVertices(endVertices) {};
+			endVertices(endVertices),
+			endUVY(endUVY) {};
 		/*
 			The starting edge loop of vertices.
 		*/
@@ -30,6 +32,10 @@ namespace geo {
 			The ending edge loop of vertices.
 		*/
 		std::vector<meshlib::Vertex> endVertices;
+		/*
+			The end UV y-coordinate of this segment.
+		*/
+		float endUVY = 0.0f;
 	};
 
 	/*

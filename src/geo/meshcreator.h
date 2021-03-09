@@ -33,7 +33,7 @@ namespace geo {
 		void edgeIntersectsQuad(const Edge edge, const Face quad, std::vector<IntersectionPoint>& intersectionPoints);
 		void generateQuad(std::vector<Vertex>& dest, const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, const int bridgeOffset, const int quadIndex);
 		int getEdgeLoopBridgeOffset(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, vec3 loop1Normal, vec3 loop2Normal);
-		void bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge);
+		void bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, float baseUVY, Bridge& bridge);
 		void findBridgeIntersections(const Bridge& bridge, const Bridge& otherBridge, std::vector<IntersectionPoint>& intersectionPoints);
 
 		std::vector<IntersectionPoint> findOutermostIntersections(std::vector<IntersectionPoint>& points);
@@ -46,7 +46,7 @@ namespace geo {
 
 		void createBranchTopology(std::shared_ptr<lsystem::OutputSegment> parent, MeshContext& mc);
 		void createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc);
-		void createCircle(std::vector<Vertex>& vertices, const lsystem::OutputSegment& segment, float interpFactor, int pointCount, float taperScale);
+		void createCircle(std::vector<Vertex>& vertices, const lsystem::OutputSegment& segment, float baseUVY,  float interpFactor, int pointCount, float taperScale);
 		void fillCircle(std::vector<Vertex>& vertices, std::string segmentType);
 
 		float getEndTaperScale(const lsystem::OutputSegment& segment);

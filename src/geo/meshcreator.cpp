@@ -141,7 +141,7 @@ int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<Vertex>& loop1, 
 	return bestOffset;
 }
 
-void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
+void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, float baseUVY, Bridge& bridge) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
 	std::vector<Vertex> quad;
@@ -151,10 +151,10 @@ void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const st
 		auto face = mesh.addFace(quad, segmentType);
 
 		if (quad[2].uv().x == 0.0f) { // Add vertex UV override to correctly UV wrap around cylinder
-			face.setVertexUVOverride(quad[2], vec2(1.0f, quad[2].uv().y));
+			face.setVertexUVOverride(quad[2], vec2(baseUVY, quad[2].uv().y));
 		}
 		if (j + 1 == loop1.size()) { // Add vertex UV override to correctly UV wrap around cylinder
-			face.setVertexUVOverride(quad[1], vec2(1.0f, quad[1].uv().y));
+			face.setVertexUVOverride(quad[1], vec2(baseUVY, quad[1].uv().y));
 		}
 
 		const auto edges = face.edges();
@@ -323,13 +323,15 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 	for (const auto& child : parent->children) {
 		if (child->isLeaf) continue;
 		Bridge bridge;
+		float baseUVY = mc.getSegment(parent->id).endUVY;
 		bridgeEdgeLoop(
 			           mc.getSegment(parent->id).endVertices,
 					   mc.getSegment(child->id).startVertices,
 					   child->type,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
 					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]),
-			bridge);
+					   baseUVY,
+				bridge);
 		bridges.push_back(bridge);
 	}
 
@@ -362,20 +364,28 @@ float geo::MeshCreator::getEndTaperScale(const lsystem::OutputSegment& segment) 
 
 void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int pointCount, int rings, MeshContext& mc) {
 	std::vector<Vertex> vertices;
+
+	float baseUVY = 0.0f;
+	if (segment.parent != nullptr) {
+		baseUVY = mc.getSegment(segment.parent->id).endUVY;
+	}
+
 	if (segment.parent != nullptr && segment.parent->children.size() == 1) {
 		vertices = std::vector<Vertex>(mc.getSegment(segment.parent->id).endVertices);
 	}
 	else {
-		createCircle(vertices, segment, 0, pointCount, 1.0f);
+		baseUVY += 1;
+		createCircle(vertices, segment, baseUVY, 0, pointCount, 1.0f);
 		if (segment.parent == nullptr) {
 			fillCircle(vertices, segment.type);
 		}
 	}
 	auto startVertices = std::vector<Vertex>(vertices);
+
 	const float endTaperScale = getEndTaperScale(segment);
 	for (int j = 0; j <= rings; j++) {
 		float interpFactor = (float(j + 1) / (rings + 1));
-		createCircle(vertices, segment, interpFactor, pointCount, 1.0f - interpFactor*(1.0f - endTaperScale));
+		createCircle(vertices, segment, baseUVY, interpFactor, pointCount, 1.0f - interpFactor*(1.0f - endTaperScale));
 		for (int i = 0; i < pointCount; i++) {
 			std::vector<Vertex> faceVertices;
 			faceVertices.push_back(vertices[i]);
@@ -384,21 +394,9 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 			faceVertices.push_back(vertices[pointCount + i]);
 			auto face = mesh.addFace(faceVertices, segment.type);
 
-			bool usedOverride = false;
-			vec2 uvOverrideIndex1 = faceVertices[1].uv();
-			if (j == 0 && segment.parent != nullptr && segment.parent->children.size() == 1) {
-				face.setVertexUVOverride(faceVertices[0], vec2(faceVertices[0].uv().x, 0.0f));
-				uvOverrideIndex1 = vec2(uvOverrideIndex1.x, 0.0f);
-				usedOverride = true;
-			}
 			if (i + 1 == pointCount) { // Add vertex UV override to correctly UV wrap around cylinder
-				uvOverrideIndex1 = vec2(1.0f, uvOverrideIndex1.y);
-				usedOverride = true;
+				face.setVertexUVOverride(faceVertices[1], vec2(1.0f, faceVertices[1].uv().y));
 				face.setVertexUVOverride(faceVertices[2], vec2(1.0f, faceVertices[2].uv().y));
-			}
-
-			if (usedOverride) {
-				face.setVertexUVOverride(faceVertices[1], uvOverrideIndex1);
 			}
 		}
 		vertices.erase(vertices.begin(), vertices.begin() + pointCount);
@@ -410,19 +408,19 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 		}
 	}
 
-	mc.setSegment(segment.id, Segment(startVertices, vertices));
+	mc.setSegment(segment.id, Segment(startVertices, vertices, baseUVY + 1));
 	if (isLastChild(segment, mc)) {
 		createBranchTopology(segment.parent, mc);
 	}
 }
 
-void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, const lsystem::OutputSegment& segment, float interpFactor, int pointCount, float taperScale) {
+void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, const lsystem::OutputSegment& segment, float baseUVY, float interpFactor, int pointCount, float taperScale) {
 	for (int i = 0; i < pointCount; i++) {
 		vec3 circleOffset = vec3(segment.length*interpFactor, 0.2*taperScale*sin(i * 2.0f * M_PI / pointCount), 0.2*taperScale*cos(i * 2.0f * M_PI / pointCount));
 		vec3 p = vec4(circleOffset, 1) * segment.mat;
 		p += segment.translation;
 		auto v = mesh.addVertex(p);
-		v.uv(vec2(float(i)/pointCount, interpFactor));
+		v.uv(vec2(float(i)/pointCount, baseUVY + interpFactor));
 		vertices.push_back(v);
 	}
 }
