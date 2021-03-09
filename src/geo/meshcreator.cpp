@@ -366,7 +366,7 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 		vertices = std::vector<Vertex>(mc.getSegment(segment.parent->id).endVertices);
 	}
 	else {
-		createCircle(vertices, segment.mat, segment.translation, 0, pointCount, 1.0f);
+		createCircle(vertices, segment, 0, pointCount, 1.0f);
 		if (segment.parent == nullptr) {
 			fillCircle(vertices, segment.type);
 		}
@@ -374,8 +374,8 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	auto startVertices = std::vector<Vertex>(vertices);
 	const float endTaperScale = getEndTaperScale(segment);
 	for (int j = 0; j <= rings; j++) {
-		float interpFactor = segment.length*(float(j + 1) / (rings + 1));
-		createCircle(vertices, segment.mat, segment.translation, interpFactor, pointCount, 1.0f - interpFactor*(1.0f - endTaperScale));
+		float interpFactor = (float(j + 1) / (rings + 1));
+		createCircle(vertices, segment, interpFactor, pointCount, 1.0f - interpFactor*(1.0f - endTaperScale));
 		for (int i = 0; i < pointCount; i++) {
 			std::vector<Vertex> faceVertices;
 			faceVertices.push_back(vertices[i]);
@@ -416,11 +416,11 @@ void geo::MeshCreator::createCylinder(const lsystem::OutputSegment& segment, int
 	}
 }
 
-void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, mat4 mat, vec3 translation, float interpFactor, int pointCount, float taperScale) {
+void geo::MeshCreator::createCircle(std::vector<Vertex>& vertices, const lsystem::OutputSegment& segment, float interpFactor, int pointCount, float taperScale) {
 	for (int i = 0; i < pointCount; i++) {
-		vec3 circleOffset = vec3(interpFactor, 0.2*taperScale*sin(i * 2.0f * M_PI / pointCount), 0.2*taperScale*cos(i * 2.0f * M_PI / pointCount));
-		vec3 p = vec4(circleOffset, 1) * mat;
-		p += translation;
+		vec3 circleOffset = vec3(segment.length*interpFactor, 0.2*taperScale*sin(i * 2.0f * M_PI / pointCount), 0.2*taperScale*cos(i * 2.0f * M_PI / pointCount));
+		vec3 p = vec4(circleOffset, 1) * segment.mat;
+		p += segment.translation;
 		auto v = mesh.addVertex(p);
 		v.uv(vec2(float(i)/pointCount, interpFactor));
 		vertices.push_back(v);
