@@ -141,7 +141,7 @@ int geo::MeshCreator::getEdgeLoopBridgeOffset(const std::vector<Vertex>& loop1, 
 	return bestOffset;
 }
 
-void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, float baseUVY, Bridge& bridge) {
+void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const std::vector<Vertex>& loop2, std::string segmentType, vec3 loop1Normal, vec3 loop2Normal, Bridge& bridge) {
 	assert(loop1.size() == loop2.size());
 	int offset = getEdgeLoopBridgeOffset(loop1, loop2, loop1Normal, loop2Normal);
 	std::vector<Vertex> quad;
@@ -151,10 +151,10 @@ void geo::MeshCreator::bridgeEdgeLoop(const std::vector<Vertex>& loop1, const st
 		auto face = mesh.addFace(quad, segmentType);
 
 		if (quad[2].uv().x == 0.0f) { // Add vertex UV override to correctly UV wrap around cylinder
-			face.setVertexUVOverride(quad[2], vec2(baseUVY, quad[2].uv().y));
+			face.setVertexUVOverride(quad[2], vec2(1.0f, quad[2].uv().y));
 		}
 		if (j + 1 == loop1.size()) { // Add vertex UV override to correctly UV wrap around cylinder
-			face.setVertexUVOverride(quad[1], vec2(baseUVY, quad[1].uv().y));
+			face.setVertexUVOverride(quad[1], vec2(1.0f, quad[1].uv().y));
 		}
 
 		const auto edges = face.edges();
@@ -330,7 +330,6 @@ void geo::MeshCreator::createBranchTopology(std::shared_ptr<lsystem::OutputSegme
 					   child->type,
 					   vec3(parent->mat[0][0], parent->mat[0][1], parent->mat[0][2]),
 					   vec3(child->mat[0][0], child->mat[0][1], child->mat[0][2]),
-					   baseUVY,
 				bridge);
 		bridges.push_back(bridge);
 	}
