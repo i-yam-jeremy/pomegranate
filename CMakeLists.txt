@@ -5,6 +5,7 @@ project(Pomegranate)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(glm CONFIG REQUIRED)
+add_definitions(-DANTLR4CPP_STATIC)
 link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib) # for antlr4
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -13,6 +14,9 @@ include_directories("${PROJECT_SOURCE_DIR}/thirdparty/include")
 
 include(LsystemParser)
 include_directories(${GENERATED_SOURCE_DIR})
+
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 set(Pomegranate_SRC 
