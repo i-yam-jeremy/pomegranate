@@ -1,5 +1,7 @@
 #include "meshlib.h"
 
+#include <algorithm>
+
 meshlib::Vertex meshlib::Mesh::addVertex(vec3 p) {
 	VertexData data{p};
 	size_t handle = getNextHandle();
@@ -68,7 +70,7 @@ void meshlib::Mesh::updateFaceVertices(Face& f, std::vector<Vertex>& verts) {
 	// Clear old data
 	for (const auto& vertexHandle : faceData.vertices) {
 		auto& faces = vertices[vertexHandle].faces;
-		const auto& found = std::find(faces.begin(), faces.end(), getHandle(f));
+		auto found = std::find(faces.begin(), faces.end(), getHandle(f));
 		if (found != faces.end()) {
 			faces.erase(found);
 		}
@@ -101,7 +103,7 @@ std::vector<meshlib::Vertex> meshlib::Mesh::getFaceUVOverriddenVertices(const Fa
 
 bool meshlib::Mesh::getFaceVertexUVOverride(const Face& f, const Vertex& v, vec2& result) {
 	auto& uvOverrides = faces[getHandle(f)].vertexUVOverrides;
-	auto& found = uvOverrides.find(getHandle(v));
+	auto found = uvOverrides.find(getHandle(v));
 	if (found == uvOverrides.end()) return false;
 
 	result = found->second;
@@ -119,12 +121,12 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 	auto& facesContainingA = vertices[getHandle(a)].faces;
 	auto& facesContainingB = vertices[getHandle(b)].faces;
 	for (auto& face : facesContainingB) {
-		auto& found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
+		auto found = std::find(facesContainingA.begin(), facesContainingA.end(), face);
 
 		// Get UV coordinate of B on current face
 		vec2 uvB;
 		auto& vertexUVOverrides = faces[face].vertexUVOverrides;
-		auto& foundUVOverride = vertexUVOverrides.find(getHandle(b));
+		auto foundUVOverride = vertexUVOverrides.find(getHandle(b));
 		if (foundUVOverride != vertexUVOverrides.end()) {
 			uvB = foundUVOverride->second;
 			vertexUVOverrides.erase(foundUVOverride);
@@ -156,7 +158,7 @@ void meshlib::Mesh::mergeVertices(Vertex& a, Vertex& b) {
 				}
 			}
 
-			auto& foundUVOverride = vertexUVOverrides.find(getHandle(a));
+			auto foundUVOverride = vertexUVOverrides.find(getHandle(a));
 			if (foundUVOverride != vertexUVOverrides.end()) {
 				vec2 uvA = vertexUVOverrides[getHandle(a)];
 				vertexUVOverrides[getHandle(a)] = (uvA + uvB) / 2.0f;
@@ -207,7 +209,7 @@ void meshlib::Mesh::toOBJ(std::ostream& out) {
 			out << "f ";
 			for (const auto& v : face.second.vertices) {
 				const auto vertexIndex = vertexIndices[v];
-				auto& found = uvOverrideIndices.find(v);
+				auto found = uvOverrideIndices.find(v);
 				const auto uvIndex = (found != uvOverrideIndices.end()) ? found->second : vertexIndex;
 				out << vertexIndex << "/" << uvIndex << " ";
 			}

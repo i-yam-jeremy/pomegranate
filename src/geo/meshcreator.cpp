@@ -180,7 +180,7 @@ std::vector<geo::MeshCreator::IntersectionPoint> geo::MeshCreator::findOutermost
 	std::unordered_map<size_t, IntersectionPoint*> outermostIntersections;
 	
 	for (auto& p : points) {
-		auto& entry = outermostIntersections.find(p.edge.hash());
+		auto entry = outermostIntersections.find(p.edge.hash());
 		if (entry == outermostIntersections.end() || entry->second->t < p.t) {
 			outermostIntersections[p.edge.hash()] = &p;
 		}

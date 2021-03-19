@@ -15,8 +15,10 @@ include_directories("${PROJECT_SOURCE_DIR}/thirdparty/include")
 include(LsystemParser)
 include_directories(${GENERATED_SOURCE_DIR})
 
-set(CMAKE_CXX_FLAGS_RELEASE "/MT")
-set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+if (MSCV)
+  set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+endif()
 
 file(GLOB_RECURSE Pomegranate-NONGENERATED_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 set(Pomegranate_SRC 
